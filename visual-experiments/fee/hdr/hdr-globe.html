@@ -17,18 +17,18 @@
 
 <body>
 
-    <script src="./node_modules/three/build/three.js"></script>
-    <script src="./node_modules/three/examples/js/postprocessing/EffectComposer.js"></script>
-    <script src="./node_modules/three/examples/js/postprocessing/RenderPass.js"></script>
-    <script src="./node_modules/three/examples/js/postprocessing/ShaderPass.js"></script>
-    <script src="./node_modules/three/examples/js/postprocessing/BloomPass.js"></script>
-    <script src="./node_modules/three/examples/js/shaders/ConvolutionShader.js"></script>
-    <script src="./node_modules/three/examples/js/shaders/CopyShader.js"></script>
-    <script src="./node_modules/three/examples/js/shaders/FXAAShader.js"></script>
-    <script src="./node_modules/three/examples/js/shaders/SMAAShader.js"></script>
-    <script src="./node_modules/three/examples/js/shaders/LuminosityHighPassShader.js"></script>
-    <script src="./node_modules/three/examples/js/postprocessing/UnrealBloomPass.js"></script>
-    <script src="./node_modules/three/examples/js/postprocessing/SMAAPass.js"></script>
+    <script src="./node_modules/thre./e/build/three.js"></script>
+    <script src="./node_modules/thre./e/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="./node_modules/thre./e/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="./node_modules/thre./e/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="./node_modules/thre./e/examples/js/postprocessing/BloomPass.js"></script>
+    <script src="./node_modules/thre./e/examples/js/shaders/ConvolutionShader.js"></script>
+    <script src="./node_modules/thre./e/examples/js/shaders/CopyShader.js"></script>
+    <script src="./node_modules/thre./e/examples/js/shaders/FXAAShader.js"></script>
+    <script src="./node_modules/thre./e/examples/js/shaders/SMAAShader.js"></script>
+    <script src="./node_modules/thre./e/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="./node_modules/thre./e/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="./node_modules/thre./e/examples/js/postprocessing/SMAAPass.js"></script>
     <script src="./hdr-bloom.js"></script>
 
 
@@ -101,7 +101,7 @@
                 depthWrite: false,
                 color: 0xffffff,
                 blending: THREE.AdditiveBlending,
-                map: new THREE.TextureLoader().load("e/DROP@2x.png"),
+                map: new THREE.TextureLoader().load("./e/DROP@2x.png"),
                 transparent: true,
             });
             ptMat.onBeforeCompile = function (shader) {
@@ -129,11 +129,11 @@
             }
             pointCloud = new THREE.Points(pts, ptMat);
 
-            earth = new THREE.TextureLoader().load("e/Earth_HighRes/8081_earthmap10k.jpg");
-            norm = new THREE.TextureLoader().load("e/Earth/normal.jpg");
-            night = new THREE.TextureLoader().load("e/Earth/night.png");
-            bump = new THREE.TextureLoader().load("e/Earth/bump.png");
-            clouds = new THREE.TextureLoader().load("e/Earth_HighRes/clouds copy.jpg");
+            earth = new THREE.TextureLoader().load("./e/Earth_HighRes/8081_earthmap10k.jpg");
+            norm = new THREE.TextureLoader().load("./e/Earth/normal.jpg");
+            night = new THREE.TextureLoader().load("./e/Earth/night.png");
+            bump = new THREE.TextureLoader().load("./e/Earth/bump.png");
+            clouds = new THREE.TextureLoader().load("./e/Earth_HighRes/clouds copy.jpg");
 
             clouds.wrapS = THREE.RepeatWrapping;
             clouds.wrapT = THREE.RepeatWrapping;
@@ -147,7 +147,7 @@
             material.bumpMap = bump;
             material.metalness = 0.6;
             material.roughness = 1.0;
-            // material.roughnessMap = new THREE.TextureLoader().load("e/Earth_HighRes/8081_earthspec4k copy.jpg");
+            // material.roughnessMap = new THREE.TextureLoader().load("./e/Earth_HighRes/8081_earthspec4k copy.jpg");
 
             material.onBeforeCompile = function (shader) {
                 // console.log( shader )
