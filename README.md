@@ -11,11 +11,11 @@ Current place for code tutorials / experiments.
 
 ### /Tricks/VFX-CHEAP-DIFFUSER
 
-![Diffuser](/tricks/vfx-cheap-diffuser/vfx.gif)
+![Diffuser](/tricks/vfx-cheap-diffuser/vfx-2.gif)
 
 Implementing diffusing effect (with particles) only using canvas-2d & simple FBO feedback loop. (Mobile friendly)
 
-[Demo Link](http://luan007.github.com/tricks/vfx-canvas-fbo)
+[Demo Link](http://luan007.github.com/tricks/vfx-cheap-diffuser)
 
 通过双canvas反馈，模拟水墨或散开类效果。此类利用FBO反馈构成的视觉效果不要求高性能，同时可以带来景深错觉。
 
