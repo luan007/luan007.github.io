@@ -11,9 +11,9 @@ Current place for code tutorials / experiments.
 
 ### /Tricks/VFX-CHEAP-DIFFUSER
 
-![Diffuser](/tricks/vfx-cheap-diffuser/vfx-2.gif)
-
 Implementing diffusing effect (with particles) only using canvas-2d & simple FBO feedback loop. (Mobile friendly)
+
+![Diffuser](/tricks/vfx-cheap-diffuser/vfx-2.gif)
 
 [Demo Link](http://luan007.github.com/tricks/vfx-cheap-diffuser)
 
