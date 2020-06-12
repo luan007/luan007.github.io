@@ -90,7 +90,7 @@ function draw_qiantou_bg() {
     // var scale_up = 1.0005;
 
 
-    if (Math.random() > 0.95) {
+    if (Math.random() > 0.3) {
         do {
             var gen = {
                 mode: 1, //Math.random() > 0.5 ? 1: 0,
@@ -98,6 +98,7 @@ function draw_qiantou_bg() {
                 y: Math.random(),
                 vx: Math.random() - 0.5,
                 vy: Math.random() - 0.5,
+                op: Math.random(),
                 rot: 0,
                 rot_spd: (Math.random() - 0.5) * 0.01,
                 life: 1,
@@ -106,14 +107,16 @@ function draw_qiantou_bg() {
             };
             var x = gen.x;
             var y = gen.y;
-        } while (Math.sqrt((x - 0.5) * (x - 0.5) + (y - 0.5) * (y - 0.5)) < 0.4);
+        } while (Math.sqrt((x - 0.5) * (x - 0.5) + (y - 0.5) * (y - 0.5)) < 0.1);
         blocks.push(gen);
     }
 
+    ctx.globalAlpha = 1;
     blocks.forEach((v) => {
         ctx.save();
         ctx.translate(v.x * w, v.y * h);
         ctx.fillStyle = v.mode == 0 ? "white" : "black";
+        ctx.globalAlpha = v.op;
         var curve = 1 - Math.pow(2 * v.life - 1, 8);
         var sz = v.sz * curve * (v.mode == 0 ? 10 : 1);
         v.rot += v.rot_spd;
@@ -127,7 +130,7 @@ function draw_qiantou_bg() {
     blocks = blocks.filter(b => b.life > 0);
 
 
-    var scale_up = 1.001;
+    var scale_up = 1.003;
     ctx = get_ctx('main');
     ctx.clearRect(0, 0, 10000, 10000);
     ctx.save();
