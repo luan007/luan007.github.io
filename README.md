@@ -21,6 +21,22 @@ Implementing diffusing effect (with particles) only using canvas-2d & simple FBO
 
 
 
+### /Tricks/VFX-DIFFERED-NOISE-STREAM
+
+Simple particle driven noise visualisation (stream alike)
+
+![FX](/tricks/vfx-differed-noise-stream/recording.gif)
+
+![FINAL](/tricks/vfx-differed-noise-stream/capture.png)
+
+[Demo Link](http://luan007.github.com/tricks/vfx-differed-noise-stream)
+
+一个简单的粒子系统，要点是用noise驱动粒子转向属性（而不是速度），来实现这个效果。
+
+同时不清空画布，积累渲染结果。
+
+
+
 ## /Visual Experiments
 
 Archived, not updated anymore.
