@@ -29,7 +29,7 @@ Simple particle driven noise visualisation (stream alike)
 
 ![FINAL](/tricks/vfx-differed-noise-stream/capture.png)
 
-[Demo Link](http://luan007.github.com/tricks/vfx-differed-noise-stream)
+[Demo Link](http://luan007.github.com/tricks/vfx-differed-noise-stream/)
 
 一个简单的粒子系统，要点是用noise驱动粒子转向属性（而不是速度），来实现这个效果。
 
