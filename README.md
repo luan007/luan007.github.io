@@ -37,6 +37,18 @@ Simple particle driven noise visualisation (stream alike)
 
 
 
+### /Tricks/VFX-NOISE-PLASMA
+
+Grid lit with high & low frequency perlin noise, decorated with stretched H/V noise. The segmentation is done by using multiplication(*) & then mod (%) by 1.
+
+![FX](/tricks/vfx-noise-plasma/capture.gif)
+
+[Demo Link](http://luan007.github.com/tricks/vfx-noise-plasma/)
+
+可用于模拟地形的可视化网格，利用高低频率的Noise叠加模拟出来。横向和纵向游走的“粒子”形态视觉细节由Noise坐标乘法完成。
+分层（地形等高线的感觉）由乘积放大后取小数位实现。
+
+
 ## /Visual Experiments
 
 Archived, not updated anymore.
