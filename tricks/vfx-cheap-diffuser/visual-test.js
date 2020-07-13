@@ -77,7 +77,7 @@ function draw_qiantou_bg() {
     ctx.clearRect(0, 0, 10000, 10000);
     ctx.drawImage(get_canvas('main'), 0, 0, w, h)
     if (frames % 1 == 0) {
-        ctx.fillStyle = "rgba(255,255,255,0.01)";
+        ctx.fillStyle = "rgba(255,255,255,0.00001)";
         ctx.fillRect(0, 0, w, h);
     }
     ctx.fillStyle = "black";
@@ -90,7 +90,7 @@ function draw_qiantou_bg() {
     // var scale_up = 1.0005;
 
 
-    if (Math.random() > 0.3) {
+    if (Math.random() > 0.1) {
         do {
             var gen = {
                 mode: 1, //Math.random() > 0.5 ? 1: 0,
@@ -135,7 +135,7 @@ function draw_qiantou_bg() {
     ctx.clearRect(0, 0, 10000, 10000);
     ctx.save();
     ctx.translate(w / 2, h / 2);
-    ctx.rotate(0.005);
+    ctx.rotate(0.01);
     // ctx.globalAlpha = 0.99;
     ctx.drawImage(get_canvas('fbo'), -w * scale_up / 2, -h * scale_up / 2, w * scale_up, h * scale_up)
     ctx.restore();
