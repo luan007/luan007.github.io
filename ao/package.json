@@ -1,0 +1,22 @@
+{
+  "name": "ao",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "parcel-plugin-static-files-copy": "^2.4.3"
+  },
+  "dependencies": {
+    "mobx": "^5.15.4",
+    "mobx-react": "^6.2.3",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-three-fiber": "^4.2.17",
+    "three": "^0.118.3"
+  }
+}
