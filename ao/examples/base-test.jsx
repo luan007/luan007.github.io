@@ -5,7 +5,6 @@ import * as three from "three";
 import { Canvas, useFrame, extend, render } from 'react-three-fiber';
 import { observable, computed, action, extendObservable } from "mobx"
 import { observer, Observer } from "mobx-react";
-import { loop, noLoop, loopEffect } from "libao/core/index";
 
 ao.looperStart();
 
@@ -13,7 +12,7 @@ function Call({ func = () => { } }) {
     React.useLayoutEffect(() => {
         func();
     }, []);
-    return <></>
+    return false
 }
 
 function Canvas2D({ children, ...props }) {
@@ -103,7 +102,7 @@ var MyBox = React.memo(({
     var spring = React.useMemo(() => ao.spring({}), []);
     window.spring2 = spring;
 
-    React.useEffect(loopEffect(() => {
+    React.useEffect(ao.loopEffect(() => {
         setVal(spring.value);
     }), [])
 
@@ -140,7 +139,6 @@ var DrawDot = React.memo(({ ctx, x, y, update, ...props }) => {
     if (ctx.current) {
         drawDot(ctx.current, x, y);
     }
-    return <></>
 });
 
 var ClearCtx = React.memo(({ update, ctx }) => {
@@ -149,7 +147,6 @@ var ClearCtx = React.memo(({ update, ctx }) => {
         c.fillStyle = `rgba(0, 0, 0, 0.1)`;
         c.fillRect(0, 0, 500, 500);
     }
-    return <></>
 })
 
 var Observe = React.memo(observer(({ children }) =>
@@ -159,7 +156,7 @@ var Observe = React.memo(observer(({ children }) =>
 
 var Loop = ({ children }) => {
     var [s, setState] = React.useState(0);
-    React.useEffect(loopEffect((t) => {
+    React.useEffect(ao.loopEffect((t) => {
         setState(t);
     }), []);
     return children(s);

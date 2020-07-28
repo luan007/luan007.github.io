@@ -138,7 +138,6 @@ exports.noLoop = noLoop;
 exports.looperStart = looperStart;
 exports.looperInterval = looperInterval;
 exports.changed = changed;
-exports.loopEffect = loopEffect;
 exports.prevT = exports.t = exports.deltaTMultipler = exports.EasedValue = exports.SpringValue = void 0;
 //tiny updatez
 const PRECISION = 0.0001;
@@ -459,18 +458,7 @@ function changed(key, cur) {
 }
 
 loop(_update_eased);
-loop(_update_springs); //this is for react
-
-function loopEffect(fn, unmount) {
-  return () => {
-    //returns high order func
-    loop(fn);
-    return () => {
-      noLoop(fn);
-      unmount && unmount();
-    };
-  };
-}
+loop(_update_springs);
 },{}],"../node_modules/libao/node_modules/open-simplex-noise/lib/constants.js":[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -4440,7 +4428,7 @@ class Scene {
     }
 
     this.visibility = (0, _ticker.eased)(0, 0, 0.2, 0.00001);
-    this.updateThreshold = updateThreshold || 0.01;
+    this.updateThreshold = updateThreshold || 0.001;
     this.id = id;
 
     this.update = updateFunc || (() => {});
@@ -87137,21 +87125,28 @@ Object.defineProperty(exports, "ResizeObserverEntry", {
 var _ResizeObserver = require("../ResizeObserver");
 
 var _ResizeObserverEntry = require("../ResizeObserverEntry");
-},{"../ResizeObserver":"../node_modules/@juggle/resize-observer/lib/ResizeObserver.js","../ResizeObserverEntry":"../node_modules/@juggle/resize-observer/lib/ResizeObserverEntry.js"}],"../node_modules/react-merge-refs/dist/index.mjs":[function(require,module,exports) {
+},{"../ResizeObserver":"../node_modules/@juggle/resize-observer/lib/ResizeObserver.js","../ResizeObserverEntry":"../node_modules/@juggle/resize-observer/lib/ResizeObserverEntry.js"}],"../node_modules/react-merge-refs/dist/react-merge-refs.esm.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = _default;
+exports.default = void 0;
 
-function _default(n) {
-  return function (t) {
-    n.forEach(function (n) {
-      "function" == typeof n ? n(t) : null != n && (n.current = t);
+function mergeRefs(refs) {
+  return function (value) {
+    refs.forEach(function (ref) {
+      if (typeof ref === "function") {
+        ref(value);
+      } else if (ref != null) {
+        ref.current = value;
+      }
     });
   };
 }
+
+var _default = mergeRefs;
+exports.default = _default;
 },{}],"../node_modules/react-three-fiber/web.js":[function(require,module,exports) {
 "use strict";
 
@@ -88415,7 +88410,7 @@ const Dom = () => {
 };
 
 exports.Dom = Dom;
-},{"@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/objectWithoutPropertiesLoose":"../node_modules/@babel/runtime/helpers/esm/objectWithoutPropertiesLoose.js","three":"../node_modules/three/build/three.module.js","react-reconciler":"../node_modules/react-reconciler/index.js","scheduler":"../node_modules/scheduler/index.js","react":"../node_modules/react/index.js","tiny-emitter":"../node_modules/tiny-emitter/index.js","react-promise-suspense":"../node_modules/react-promise-suspense/build/index.js","react-use-measure":"../node_modules/react-use-measure/dist/web.js","@juggle/resize-observer":"../node_modules/@juggle/resize-observer/lib/exports/resize-observer.js","react-merge-refs":"../node_modules/react-merge-refs/dist/index.mjs"}],"../../../../../.nvm/versions/node/v13.12.0/lib/node_modules/parcel-bundler/node_modules/process/browser.js":[function(require,module,exports) {
+},{"@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/objectWithoutPropertiesLoose":"../node_modules/@babel/runtime/helpers/esm/objectWithoutPropertiesLoose.js","three":"../node_modules/three/build/three.module.js","react-reconciler":"../node_modules/react-reconciler/index.js","scheduler":"../node_modules/scheduler/index.js","react":"../node_modules/react/index.js","tiny-emitter":"../node_modules/tiny-emitter/index.js","react-promise-suspense":"../node_modules/react-promise-suspense/build/index.js","react-use-measure":"../node_modules/react-use-measure/dist/web.js","@juggle/resize-observer":"../node_modules/@juggle/resize-observer/lib/exports/resize-observer.js","react-merge-refs":"../node_modules/react-merge-refs/dist/react-merge-refs.esm.js"}],"../../../../../.nvm/versions/node/v13.12.0/lib/node_modules/parcel-bundler/node_modules/process/browser.js":[function(require,module,exports) {
 
 // shim for using process in browser
 var process = module.exports = {}; // cached from whatever global is present so that test runners that stub it
@@ -95228,7 +95223,7 @@ function Call(_ref) {
   React.useLayoutEffect(function () {
     func();
   }, []);
-  return /*#__PURE__*/React.createElement(React.Fragment, null);
+  return false;
 }
 
 function Canvas2D(_ref2) {
@@ -95343,7 +95338,7 @@ var MyBox = React.memo(function (_ref5) {
     return ao.spring({});
   }, []);
   window.spring2 = spring;
-  React.useEffect((0, ao.loopEffect)(function () {
+  React.useEffect(ao.loopEffect(function () {
     setVal(spring.value);
   }), []); // var rot = [obj.rot[0], obj.rot[1], obj.rot[2]];
 
@@ -95390,8 +95385,6 @@ var DrawDot = React.memo(function (_ref6) {
   if (ctx.current) {
     drawDot(ctx.current, x, y);
   }
-
-  return /*#__PURE__*/React.createElement(React.Fragment, null);
 });
 var ClearCtx = React.memo(function (_ref7) {
   var update = _ref7.update,
@@ -95402,8 +95395,6 @@ var ClearCtx = React.memo(function (_ref7) {
     c.fillStyle = "rgba(0, 0, 0, 0.1)";
     c.fillRect(0, 0, 500, 500);
   }
-
-  return /*#__PURE__*/React.createElement(React.Fragment, null);
 });
 var Observe = React.memo((0, _mobxReact.observer)(function (_ref8) {
   var children = _ref8.children;
@@ -95418,7 +95409,7 @@ var Loop = function Loop(_ref9) {
       s = _React$useState6[0],
       setState = _React$useState6[1];
 
-  React.useEffect((0, ao.loopEffect)(function (t) {
+  React.useEffect(ao.loopEffect(function (t) {
     setState(t);
   }), []);
   return children(s);
