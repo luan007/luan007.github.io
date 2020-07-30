@@ -52,13 +52,33 @@ window.gtest = gtest;
     });
 }
 
+var injector = vue.defineComponent({
+    props: ['canvas'],
+    setup() {
+        vue.provide("paint", {
+            canvas: null,
+            ctx: null
+        });
+    },
+    computed: {
+        ctx() {
+            return this.canvas.getContext('2d');
+        }
+    },
+    template: `
+        <slot></slot>
+    `
+});
+
 var canvasCtx = (props, ctx) => {
     var canvas = props.canvas;
     var ctx2d = canvas.getContext('2d');
-    console.log(ctx2d);
-    vue.provide("ctx", ctx2d);
-    return ctx.slots.default({});
+    return ctx.slots.default();
 };
+
+var paint = (props, ctx) => {
+    console.log(props, ctx);
+}
 
 var debug = (props, ctx) => {
     console.log(props, ctx);
@@ -70,27 +90,44 @@ var vif = (props, ctx) => {
     ) : false;
 }
 
+var graphical_canvas_a = vue.defineComponent({
+    setup() {
+        var canvas_ref = vue.ref();
+        return {
+            canvas_ref
+        }
+    },
+    computed: {
+        ctx() {
+            return this.canvas_ref ? this.canvas_ref.getContext('2d') : null;
+        }
+    },
+    render() {
+        if (!this.ctx) {
+            //do nothing
+        }
+        else {
+            let ctx = this.ctx;
+            ctx.clearRect(0, 0, 100, 100);
+            ctx.fillRect(0, 0, 300, 300);
+        }
+        return (
+            <canvas ref='canvas_ref'></canvas>
+        );
+    }
+})
+
 var app = vue.createApp({
     render() {
         return (
-            <>
-                <canvas ref="canvasRef"></canvas>
-                <vif value={this.canvasRef}>
-                    <canvasCtx canvas={this.canvasRef}>
-                        <div>hi</div>
-                    </canvasCtx>
-                </vif>
-            </>
+            <div>
+                <graphical_canvas_a></graphical_canvas_a>
+            </div>
         )
-    },
-    setup() {
-        var canvasRef = vue.ref();
-        return {
-            canvasRef
-        }
     }
 });
 
+app.component('injector', injector);
 app.mount("#main");
 
 
