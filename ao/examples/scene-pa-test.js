@@ -117,11 +117,118 @@ var graphical_canvas_a = vue.defineComponent({
     }
 })
 
+var root = {
+    t: "and",
+    c: [
+        {
+            t: "v", v: 1
+        },
+        {
+            t: "or", c: [
+                {
+                    t: "v", v: 2
+                },
+                {
+                    t: "v", v: 3
+                },
+                {
+                    t: "v", v: 3
+                },
+                {
+                    t: "v", v: 3
+                },
+                {
+                    t: "v", v: 3
+                }
+            ]
+        },
+        {
+            t: "v", v: 4
+        }
+    ]
+};
+
+var Node = ({ id, linkWidth, height, xoffset, yoffset, data, compHeight }) => {
+    return <div class='node' style={{
+        position: 'absolute',
+        top: yoffset + "px",
+        left: xoffset + "px",
+        height: height + "px",
+        fontFamily: "sans-serif"
+    }} id={'node_' + id}>
+        <div style={{
+            position: 'relative',
+            top: (height / 2) + "px",
+            transform: 'translateY(-50%)'
+        }}>
+            {data.t}
+        </div>
+        {data.c ?
+            (<>
+                <div style={{
+                    position: 'absolute',
+                    top: compHeight / 2 + "px",
+                    left: "15px",
+                    width: "1px",
+                    background: "#ccc",
+                    height: (height / 2 - 15 - compHeight / 2) + "px"
+                }}></div>
+                <div style={{
+                    position: 'absolute',
+                    bottom: compHeight / 2 + "px",
+                    left: "15px",
+                    width: "1px",
+                    background: "#ccc",
+                    height: (height / 2 - 15 - compHeight / 2) + "px"
+                }}></div>
+            </>) : false}
+
+        <div style={{
+            position: 'absolute',
+            top: "50%",
+            left: -(linkWidth - 15) + "px",
+            height: "1px",
+            background: "#ccc",
+            width: (linkWidth - 30) + "px"
+        }}></div>
+    </div>
+};
+
+var NodeGraph = ({ root, xstep, compHeight }) => {
+    var nodes = [];
+    var seq = 0;
+    function putNode(n, xoffset, yoffset) {
+        var height = 0;
+        seq++;
+        if (n.c) {
+            n.c.forEach((_n) => {
+                var o = putNode(_n, xoffset + xstep, yoffset + height);
+                height += o.height;
+            });
+        }
+        else {
+            height = compHeight;
+        }
+        nodes.push(
+            <Node linkWidth={xstep} compHeight={compHeight} id={seq} data={n} height={height} xoffset={xoffset} yoffset={yoffset} />
+        )
+        return {
+            height: height,
+            xoffset: xoffset,
+            yoffset: yoffset
+        };
+    }
+    putNode(root, 0, 0);
+    return (<div class="graph">
+        {nodes}
+    </div>)
+};
+
 var app = vue.createApp({
     render() {
         return (
             <div>
-                <graphical_canvas_a></graphical_canvas_a>
+                <NodeGraph root={root} xstep={80} compHeight={50}></NodeGraph>
             </div>
         )
     }
