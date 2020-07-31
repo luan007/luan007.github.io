@@ -41,7 +41,6 @@ threeB.renderer_tone_mapping(renderer, scene, { //电影原色标准ToneMapping 
 threeB.renderer_patch_postprocessing(renderer);
 document.body.appendChild(renderer.domElement);
 
-
 var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
 const composer = new EffectComposer(renderer, {

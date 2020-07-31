@@ -10,7 +10,7 @@
   "license": "ISC",
   "devDependencies": {
     "@ant-design-vue/babel-plugin-jsx": "^1.0.0-rc.1",
-    "@babel/core": "^7.10.5",
+    "@babel/core": "^7.11.0",
     "@vue/babel-preset-jsx": "^1.1.2",
     "@vue/compiler-sfc": "^3.0.0-rc.5",
     "parcel-plugin-static-files-copy": "^2.4.3",
@@ -20,6 +20,9 @@
     "mobx": "^5.15.4",
     "mobx-react": "^6.2.3",
     "mobx-react-lite": "^2.0.7",
+    "open-simplex-noise": "^2.4.0-pre4",
+    "postprocessing": "^6.16.0",
+    "qps": "^1.1.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-three-fiber": "^4.2.17",

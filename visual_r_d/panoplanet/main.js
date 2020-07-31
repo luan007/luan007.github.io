@@ -45,7 +45,6 @@ const composer = new EffectComposer(renderer, {
     frameBufferType: FloatType,
 });
 
-
 const bloomPass = new UnrealBloomPass();
 bloomPass.threshold = 3.0;
 bloomPass.strength = 1;
