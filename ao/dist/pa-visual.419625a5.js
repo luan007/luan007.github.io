@@ -4143,6 +4143,7 @@ exports.simplexArray2d = simplexArray2d;
 exports.simplexArray3d = simplexArray3d;
 exports.simplexArray4d = simplexArray4d;
 exports.pickClosest2d = pickClosest2d;
+exports.curl3d = curl3d;
 exports.ImprovedNoise = exports.n2d = exports.n3d = exports.n4d = exports.MappedValue = void 0;
 
 var OpenSimplexNoise = _interopRequireWildcard(require("open-simplex-noise"));
@@ -4466,6 +4467,35 @@ var ImprovedNoise = function ImprovedNoise() {
 };
 
 exports.ImprovedNoise = ImprovedNoise;
+
+function curl3d(x, y, z) {
+  var eps = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 1.0;
+  var noise3d = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : n3d;
+  var n1, n2, a, b;
+  var curl = [0, 0, 0];
+  n1 = noise3d(x, y + eps, z);
+  n2 = noise3d(x, y - eps, z);
+  a = (n1 - n2) / (2 * eps);
+  n1 = noise3d(x, y, z + eps);
+  n2 = noise3d(x, y, z - eps);
+  b = (n1 - n2) / (2 * eps);
+  curl[0] = a - b;
+  n1 = noise3d(x, y, z + eps);
+  n2 = noise3d(x, y, z - eps);
+  a = (n1 - n2) / (2 * eps);
+  n1 = noise3d(x + eps, y, z);
+  n2 = noise3d(x + eps, y, z);
+  b = (n1 - n2) / (2 * eps);
+  curl[1] = a - b;
+  n1 = noise3d(x + eps, y, z);
+  n2 = noise3d(x - eps, y, z);
+  a = (n1 - n2) / (2 * eps);
+  n1 = noise3d(x, y + eps, z);
+  n2 = noise3d(x, y - eps, z);
+  b = (n1 - n2) / (2 * eps);
+  curl[2] = a - b;
+  return curl;
+}
 },{"open-simplex-noise":"libao/node_modules/open-simplex-noise/lib/index.js"}],"libao/core/scene.js":[function(require,module,exports) {
 
 "use strict";
@@ -52851,6 +52881,8 @@ var _LuminosityHighPassShader = require("three/examples/jsm/shaders/LuminosityHi
  * - https://docs.unrealengine.com/latest/INT/Engine/Rendering/PostProcessEffects/Bloom/
  */
 var PatchedUnrealBloomPass = function PatchedUnrealBloomPass(resolution, strength, radius, threshold) {
+  var bloomUnifiedFactor = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 0.5;
+
   _Pass.Pass.call(this);
 
   console.log(resolution);
@@ -52928,9 +52960,11 @@ var PatchedUnrealBloomPass = function PatchedUnrealBloomPass(resolution, strengt
   this.compositeMaterial.needsUpdate = true;
   this.compositeMaterial.toneMapped = false;
   var bloomFactors = [1.0, 0.8, 0.6, 0.4, 0.2];
-  this.compositeMaterial.uniforms["bloomFactors"].value = bloomFactors;
+  this.compositeMaterial.uniforms["bloomFactors"].value = bloomFactors.map(function (v) {
+    return v * bloomUnifiedFactor;
+  });
   this.bloomTintColors = [new _threeModule.Vector3(1, 1, 1), new _threeModule.Vector3(1, 1, 1), new _threeModule.Vector3(1, 1, 1), new _threeModule.Vector3(1, 1, 1), new _threeModule.Vector3(1, 1, 1)];
-  this.compositeMaterial.uniforms["bloomTintColors"].value = this.bloomTintColors; // copy material
+  this.compositeMaterial.uniforms["bloomTintColors"].vale = this.bloomTintColors; // copy material
 
   if (_CopyShader.CopyShader === undefined) {
     console.error("UnrealBloomPass relies on CopyShader");
@@ -53178,7 +53212,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.threeFXPatchEffect = threeFXPatchEffect;
-exports.threeFXBloomEffect = exports.threeFXSSAOEffect = exports.threeFXSSAOEffect_PRESETS = exports.threeFXNormalPass = exports.threeFXEffectPass = exports.threeFXSMAAEffect = exports.threeFXToneMappingEffect = exports.threeFXEffect = exports.threeFXFilmPass = exports.threeFXUnrealPass = exports.threeFXRenderPass = exports.threeFXAddPass = exports.threeFXComposer = void 0;
+exports.threeFXSMAAEffect_GetImages = exports.threeFXBloomEffect = exports.threeFXSSAOEffect = exports.threeFXSSAOEffect_PRESETS = exports.threeFXNormalPass = exports.threeFXEffectPass = exports.threeFXSMAAEffect = exports.threeFXToneMappingEffect = exports.threeFXEffect = exports.threeFXFilmPass = exports.threeFXUnrealPass = exports.threeFXRenderPass = exports.threeFXAddPass = exports.threeFXComposer = void 0;
 
 var postprocessing = _interopRequireWildcard(require("postprocessing"));
 
@@ -53189,6 +53223,8 @@ var three = _interopRequireWildcard(require("three"));
 var _FilmPass = require("three/examples/jsm/postprocessing/FilmPass");
 
 var _UnreallBloomPassPatched = require("./patch/UnreallBloomPassPatched");
+
+var _core = require("../core");
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
 
@@ -53231,7 +53267,8 @@ var threeFXComposer = function threeFXComposer(_ref) {
   ctx.composer = composer;
   ctx.clock = clock;
   (0, _threeUtil.threeUseRenderSeq)(ctx).push(function () {
-    composer.render(clock.getDelta());
+    var delta = clock.getDelta();
+    composer.render(delta);
     return true;
   });
 
@@ -53279,16 +53316,19 @@ var threeFXUnrealPass = function threeFXUnrealPass(_ref2) {
       _ref2$strength = _ref2.strength,
       strength = _ref2$strength === void 0 ? 0.4 : _ref2$strength,
       _ref2$radius = _ref2.radius,
-      radius = _ref2$radius === void 0 ? 1 : _ref2$radius;
+      radius = _ref2$radius === void 0 ? 1 : _ref2$radius,
+      _ref2$unifiedFactor = _ref2.unifiedFactor,
+      unifiedFactor = _ref2$unifiedFactor === void 0 ? 0.5 : _ref2$unifiedFactor;
   var ctx = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _threeUtil.threeDefaultCtx;
   threeFXPatchEffect(_UnreallBloomPassPatched.PatchedUnrealBloomPass);
-  var pass = new _UnreallBloomPassPatched.PatchedUnrealBloomPass(resolution, strength, threshold, radius);
+  var pass = new _UnreallBloomPassPatched.PatchedUnrealBloomPass(resolution, strength, radius, threshold, unifiedFactor);
   ctx.composer.addPass(pass);
   var params = {
     resolution: resolution,
     threshold: threshold,
     strength: strength,
-    radius: radius
+    radius: radius,
+    unifiedFactor: unifiedFactor
   };
   return {
     pass: pass,
@@ -53359,12 +53399,25 @@ var threeFXSMAAEffect = function threeFXSMAAEffect(_ref4) {
       searchImage = _ref4.searchImage,
       areaImage = _ref4.areaImage;
   var ctx = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _threeUtil.threeDefaultCtx;
+
+  if (!searchImage && !ctx.fx_smaa_textures) {
+    throw "SMAA Effect requires ctx.fx_smaa_textures, load them first or manually set searchImage";
+  }
+
+  searchImage = searchImage || ctx.fx_smaa_textures[0];
+  areaImage = areaImage || ctx.fx_smaa_textures[1];
+  var params = {
+    searchImage: searchImage,
+    areaImage: areaImage,
+    edgeDetection: edgeDetection
+  };
   var smaaEffect = new postprocessing.SMAAEffect(searchImage, areaImage);
   smaaEffect.colorEdgesMaterial.setEdgeDetectionThreshold(edgeDetection);
   return {
-    pass: smaaEffect,
+    effect: smaaEffect,
     params: params,
-    update: function update() {}
+    update: function update() {},
+    is_effect_shell: true
   };
 };
 
@@ -53392,11 +53445,16 @@ var threeFXEffectPass = function threeFXEffectPass() {
 
 exports.threeFXEffectPass = threeFXEffectPass;
 
-var threeFXNormalPass = function threeFXNormalPass() {
-  var ctx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _threeUtil.threeDefaultCtx;
-  var params = {};
+var threeFXNormalPass = function threeFXNormalPass(_ref5) {
+  var _ref5$resolutionScale = _ref5.resolutionScale,
+      resolutionScale = _ref5$resolutionScale === void 0 ? 0.5 : _ref5$resolutionScale;
+  var ctx = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _threeUtil.threeDefaultCtx;
+  var params = {
+    resolutionScale: resolutionScale
+  };
   var pass = new postprocessing.NormalPass(ctx.scene, ctx.camera);
   ctx.composer.addPass(pass);
+  pass.resolution.scale = resolutionScale;
   ctx.composer_normal_pass = pass;
   return {
     pass: pass,
@@ -53540,39 +53598,57 @@ var threeFXSSAOEffect_PRESETS = {
     color: new three.Color(0, 0, 0),
     resolutionScale: 0.5 //fast
 
+  },
+  Fast_SSAO_Detail: {
+    samples: 9,
+    rings: 7,
+    color: 0,
+    intensity: 3,
+    bias: 0.1,
+    radius: 2,
+    luminanceInfluence: 0.2
+  },
+  Fast_SSAO: {
+    samples: 7,
+    rings: 3,
+    color: 0,
+    intensity: 2,
+    bias: 0.05,
+    radius: 10,
+    luminanceInfluence: 0.2
   }
 };
 exports.threeFXSSAOEffect_PRESETS = threeFXSSAOEffect_PRESETS;
 
-var threeFXSSAOEffect = function threeFXSSAOEffect(_ref5) {
-  var _ref5$blendFunction = _ref5.blendFunction,
-      blendFunction = _ref5$blendFunction === void 0 ? postprocessing.BlendFunction.MULTIPLY : _ref5$blendFunction,
-      _ref5$samples = _ref5.samples,
-      samples = _ref5$samples === void 0 ? 21 : _ref5$samples,
-      _ref5$rings = _ref5.rings,
-      rings = _ref5$rings === void 0 ? 4 : _ref5$rings,
-      _ref5$distanceThresho = _ref5.distanceThreshold,
-      distanceThreshold = _ref5$distanceThresho === void 0 ? 1.0 : _ref5$distanceThresho,
-      _ref5$distanceFalloff = _ref5.distanceFalloff,
-      distanceFalloff = _ref5$distanceFalloff === void 0 ? 0.0 : _ref5$distanceFalloff,
-      _ref5$rangeThreshold = _ref5.rangeThreshold,
-      rangeThreshold = _ref5$rangeThreshold === void 0 ? 0.015 : _ref5$rangeThreshold,
-      _ref5$rangeFalloff = _ref5.rangeFalloff,
-      rangeFalloff = _ref5$rangeFalloff === void 0 ? 0.002 : _ref5$rangeFalloff,
-      _ref5$luminanceInflue = _ref5.luminanceInfluence,
-      luminanceInfluence = _ref5$luminanceInflue === void 0 ? 0.1 : _ref5$luminanceInflue,
-      _ref5$radius = _ref5.radius,
-      radius = _ref5$radius === void 0 ? 20 : _ref5$radius,
-      _ref5$scale = _ref5.scale,
-      scale = _ref5$scale === void 0 ? 1.0 : _ref5$scale,
-      _ref5$bias = _ref5.bias,
-      bias = _ref5$bias === void 0 ? 0.05 : _ref5$bias,
-      _ref5$intensity = _ref5.intensity,
-      intensity = _ref5$intensity === void 0 ? 10 : _ref5$intensity,
-      _ref5$fade = _ref5.fade,
-      fade = _ref5$fade === void 0 ? 0.001 : _ref5$fade,
-      _ref5$color = _ref5.color,
-      color = _ref5$color === void 0 ? new three.Color(1, 0, 0) : _ref5$color;
+var threeFXSSAOEffect = function threeFXSSAOEffect(_ref6) {
+  var _ref6$blendFunction = _ref6.blendFunction,
+      blendFunction = _ref6$blendFunction === void 0 ? postprocessing.BlendFunction.MULTIPLY : _ref6$blendFunction,
+      _ref6$samples = _ref6.samples,
+      samples = _ref6$samples === void 0 ? 21 : _ref6$samples,
+      _ref6$rings = _ref6.rings,
+      rings = _ref6$rings === void 0 ? 4 : _ref6$rings,
+      _ref6$distanceThresho = _ref6.distanceThreshold,
+      distanceThreshold = _ref6$distanceThresho === void 0 ? 1.0 : _ref6$distanceThresho,
+      _ref6$distanceFalloff = _ref6.distanceFalloff,
+      distanceFalloff = _ref6$distanceFalloff === void 0 ? 0.0 : _ref6$distanceFalloff,
+      _ref6$rangeThreshold = _ref6.rangeThreshold,
+      rangeThreshold = _ref6$rangeThreshold === void 0 ? 0.015 : _ref6$rangeThreshold,
+      _ref6$rangeFalloff = _ref6.rangeFalloff,
+      rangeFalloff = _ref6$rangeFalloff === void 0 ? 0.002 : _ref6$rangeFalloff,
+      _ref6$luminanceInflue = _ref6.luminanceInfluence,
+      luminanceInfluence = _ref6$luminanceInflue === void 0 ? 0.1 : _ref6$luminanceInflue,
+      _ref6$radius = _ref6.radius,
+      radius = _ref6$radius === void 0 ? 20 : _ref6$radius,
+      _ref6$scale = _ref6.scale,
+      scale = _ref6$scale === void 0 ? 1.0 : _ref6$scale,
+      _ref6$bias = _ref6.bias,
+      bias = _ref6$bias === void 0 ? 0.05 : _ref6$bias,
+      _ref6$intensity = _ref6.intensity,
+      intensity = _ref6$intensity === void 0 ? 10 : _ref6$intensity,
+      _ref6$fade = _ref6.fade,
+      fade = _ref6$fade === void 0 ? 0.001 : _ref6$fade,
+      _ref6$color = _ref6.color,
+      color = _ref6$color === void 0 ? new three.Color(1, 0, 0) : _ref6$color;
   var ctx = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _threeUtil.threeDefaultCtx;
 
   if (!ctx.composer_normal_pass) {
@@ -53606,19 +53682,19 @@ var threeFXSSAOEffect = function threeFXSSAOEffect(_ref5) {
 
 exports.threeFXSSAOEffect = threeFXSSAOEffect;
 
-var threeFXBloomEffect = function threeFXBloomEffect(_ref6) {
-  var _ref6$opacity = _ref6.opacity,
-      opacity = _ref6$opacity === void 0 ? 1 : _ref6$opacity,
-      _ref6$blendFunction = _ref6.blendFunction,
-      blendFunction = _ref6$blendFunction === void 0 ? postprocessing.BlendFunction.SCREEN : _ref6$blendFunction,
-      _ref6$kernelSize = _ref6.kernelSize,
-      kernelSize = _ref6$kernelSize === void 0 ? postprocessing.KernelSize.VERY_LARGE : _ref6$kernelSize,
-      _ref6$luminanceThresh = _ref6.luminanceThreshold,
-      luminanceThreshold = _ref6$luminanceThresh === void 0 ? 0.9 : _ref6$luminanceThresh,
-      _ref6$luminanceSmooth = _ref6.luminanceSmoothing,
-      luminanceSmoothing = _ref6$luminanceSmooth === void 0 ? 0.07 : _ref6$luminanceSmooth,
-      _ref6$height = _ref6.height,
-      height = _ref6$height === void 0 ? 600 : _ref6$height;
+var threeFXBloomEffect = function threeFXBloomEffect(_ref7) {
+  var _ref7$opacity = _ref7.opacity,
+      opacity = _ref7$opacity === void 0 ? 1 : _ref7$opacity,
+      _ref7$blendFunction = _ref7.blendFunction,
+      blendFunction = _ref7$blendFunction === void 0 ? postprocessing.BlendFunction.SCREEN : _ref7$blendFunction,
+      _ref7$kernelSize = _ref7.kernelSize,
+      kernelSize = _ref7$kernelSize === void 0 ? postprocessing.KernelSize.VERY_LARGE : _ref7$kernelSize,
+      _ref7$luminanceThresh = _ref7.luminanceThreshold,
+      luminanceThreshold = _ref7$luminanceThresh === void 0 ? 0.9 : _ref7$luminanceThresh,
+      _ref7$luminanceSmooth = _ref7.luminanceSmoothing,
+      luminanceSmoothing = _ref7$luminanceSmooth === void 0 ? 0.07 : _ref7$luminanceSmooth,
+      _ref7$height = _ref7.height,
+      height = _ref7$height === void 0 ? 600 : _ref7$height;
   var ctx = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _threeUtil.threeDefaultCtx;
   var params = {
     opacity: opacity,
@@ -53638,7 +53714,20 @@ var threeFXBloomEffect = function threeFXBloomEffect(_ref6) {
 };
 
 exports.threeFXBloomEffect = threeFXBloomEffect;
-},{"postprocessing":"libao/node_modules/postprocessing/build/postprocessing.esm.js","./three-util":"libao/fx/three-util.js","three":"libao/node_modules/three/build/three.module.js","three/examples/jsm/postprocessing/FilmPass":"libao/node_modules/three/examples/jsm/postprocessing/FilmPass.js","./patch/UnreallBloomPassPatched":"libao/fx/patch/UnreallBloomPassPatched.js"}],"libao/node_modules/three/examples/jsm/controls/OrbitControls.js":[function(require,module,exports) {
+
+var threeFXSMAAEffect_GetImages = function threeFXSMAAEffect_GetImages() {
+  var ctx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _threeUtil.threeDefaultCtx;
+  var smaa = new postprocessing.SMAAImageLoader();
+  return new Promise(function (res, rej) {
+    smaa.load(function (result) {
+      ctx.fx_smaa_textures = result;
+      res(result);
+    }, rej);
+  });
+};
+
+exports.threeFXSMAAEffect_GetImages = threeFXSMAAEffect_GetImages;
+},{"postprocessing":"libao/node_modules/postprocessing/build/postprocessing.esm.js","./three-util":"libao/fx/three-util.js","three":"libao/node_modules/three/build/three.module.js","three/examples/jsm/postprocessing/FilmPass":"libao/node_modules/three/examples/jsm/postprocessing/FilmPass.js","./patch/UnreallBloomPassPatched":"libao/fx/patch/UnreallBloomPassPatched.js","../core":"libao/core/index.js"}],"libao/node_modules/three/examples/jsm/controls/OrbitControls.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -65591,6 +65680,18 @@ function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return 
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
@@ -65600,57 +65701,99 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 ao.threePatchPCSS_Shadow({}); //全局高级阴影
 
 var _ao$threeRenderer = ao.threeRenderer(_objectSpread({
-  clearColor: 0
+  // clearColor: 0x3582f9,
+  clearColor: 0x333444
 }, ao.threeRendererCfg_HighPerf_PostFX)),
     renderer = _ao$threeRenderer.renderer,
     canvas = _ao$threeRenderer.canvas;
 
 var scene = ao.threeScene();
 var cam = ao.threePerspectiveCamera(50);
-ao.threeAutoColorMGMT(); //颜色管理预设
+scene.add(new ao.three.AmbientLight(0xffffff, 0.5));
+var dirLight = new ao.three.DirectionalLight(0xff3311, 3.0);
+dirLight.castShadow = true;
+dirLight.position.set(0, -20, -20);
+scene.add(dirLight);
+ao.threeAutoColorMGMT();
+ao.threeFXSMAAEffect_GetImages().then(function () {
+  ao.threeFXComposer({});
+  ao.threeFXNormalPass({
+    resolutionScale: 1
+  });
+  ao.threeFXEffectPass([ao.threeFXSMAAEffect({})]); // ao.threeFXFilmPass({}); //胶片后期
 
-ao.threeFXComposer({}); //启用后期
-
-ao.threeFXNormalPass(); //Normal渲染
-
-ao.threeFXEffectPass([ao.threeFXSSAOEffect(_objectSpread({}, ao.threeFXSSAOEffect_PRESETS.DBG)), ao.threeFXSSAOEffect(_objectSpread(_objectSpread({}, ao.threeFXSSAOEffect_PRESETS.DustEverywhere), {}, {
-  //预设
-  color: new ao.three.Color(1, 1, 0),
-  blendFunction: ao.postprocessing.BlendFunction.SUBTRACT
-}))]); // ao.threeFXUnrealPass({  //Unreal辉光渲染 (HDR)
-//     threshold: 1        //大于1的像素才会发光，证明全局HDR被支持
-// });
-// ao.threeFXFilmPass({}); //胶片后期
-
+  ao.threeFXUnrealPass({
+    //Unreal辉光渲染 (HDR)
+    threshold: 0.8,
+    strength: 0.8,
+    radius: 0.3,
+    unifiedFactor: .1
+  });
+  ao.threeFXEffectPass([ao.threeFXSSAOEffect(ao.threeFXSSAOEffect_PRESETS.Fast_SSAO_Detail) // ao.threeFXSSAOEffect(ao.threeFXSSAOEffect_PRESETS.Fast_SSAO)
+  // ao.threeFXSSAOEffect({  //SSAO效果
+  //     ...ao.threeFXSSAOEffect_PRESETS.DustEverywhere, //预设
+  //     color: new three.Color(1, 1, 0),
+  //     blendFunction: ao.postprocessing.BlendFunction.SUBTRACT
+  // }),
+  ]);
+});
 ao.threeOrbitControl({
   //控制
   camPos: new ao.three.Vector3(0, 0, 10)
 });
-var grp = new ao.three.Group();
-grp.position.z = 0;
+var geo = new ao.three.BoxGeometry(0.04, 0.04, 0.8);
+var mat = new ao.three.MeshStandardMaterial({
+  emissive: 0xffffff,
+  emissiveIntensity: 0,
+  metalness: 0.5,
+  roughness: 0.5
+});
+var instanced = new ao.three.InstancedMesh(geo, mat, 3000);
+instanced.castShadow = true;
+instanced.receiveShadow = true;
+var obj = new ao.three.Object3D();
+scene.add(instanced);
+instanced.instanceMatrix.setUsage(ao.three.DynamicDrawUsage);
+var mat4 = new ao.three.Matrix4();
 
-for (var i = 0; i < 30; i++) {
-  var mesh = new ao.three.Mesh(new ao.three.BoxGeometry(1, 1, 1), new ao.three.MeshStandardMaterial({
-    emissive: 0xffffff,
-    emissiveIntensity: Math.random() * 2
-  }));
-  mesh.position.set(ao.rrand(-5, 5), ao.rrand(-5, 5), ao.rrand(-5, 5));
+for (var i = 0; i < 3000; i++) {
+  obj.position.set(ao.rrand(-2, 2), ao.rrand(-2, 2), ao.rrand(-2, 2));
 
-  (function (m) {
-    var y = ao.rrand(-5, 5);
-    var spd = Math.random();
-    (0, ao.loop)(function (t) {
-      m.position.y = y + Math.sin(t * spd * 0.2) * 2;
-    });
-  })(mesh);
+  var _ao$curl3d = ao.curl3d(obj.position.x / 8, obj.position.y / 9, obj.position.z / 8),
+      _ao$curl3d2 = _slicedToArray(_ao$curl3d, 3),
+      curlX = _ao$curl3d2[0],
+      curlY = _ao$curl3d2[1],
+      curlZ = _ao$curl3d2[2];
 
-  grp.add(mesh);
+  obj.rotation.set(curlX * Math.PI * 2, curlY * Math.PI * 2, curlZ * Math.PI * 2);
+  obj.updateMatrix();
+  instanced.setMatrixAt(i, obj.matrix);
 }
 
-scene.add(grp);
-(0, ao.loop)(function () {
-  grp.rotation.x += 0.001;
-  grp.rotation.y += 0.006;
+(0, ao.loop)(function (t) {
+  instanced.rotation.x += 0.001;
+  instanced.rotation.y += 0.003;
+  t *= 0.1;
+
+  for (var i = 0; i < 3000; i++) {
+    instanced.getMatrixAt(i, mat4);
+    obj.position.setFromMatrixPosition(mat4);
+    obj.setRotationFromMatrix(mat4);
+
+    var _ao$curl3d3 = ao.curl3d(obj.position.x / 8 - t, obj.position.y / 9 + t, obj.position.z / 8 + t),
+        _ao$curl3d4 = _slicedToArray(_ao$curl3d3, 3),
+        curlX = _ao$curl3d4[0],
+        curlY = _ao$curl3d4[1],
+        curlZ = _ao$curl3d4[2];
+
+    obj.rotation.set(curlX * Math.PI * 2, curlY * Math.PI * 2, curlZ * Math.PI * 2); // obj.updateMatrix();
+
+    obj.updateMatrix();
+    instanced.setMatrixAt(i, obj.matrix);
+  }
+
+  instanced.needsUpdate = true;
+  instanced.instanceMatrix.needsUpdate = true;
 });
 ao.threeLoop();
 ao.looperStart();
