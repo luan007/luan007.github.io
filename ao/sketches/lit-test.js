@@ -3,7 +3,12 @@ import { three, vue, loop } from "./libao";
 import { h_onchange, meta, m_color, m_number, proxy_three_color, m_bool } from "./libao/buildr/lite";
 
 
-var { renderer, canvas } = ao.threeRenderer({ dpi: 2 });
+var { renderer, canvas } = ao.threeRenderer({
+    // clearColor: 0x3582f9,
+    clearColor: 0x333444,
+    // clearColor: 0,
+    ...ao.threeRendererCfg_HighPerf_PostFX //高性能配置
+});
 
 ao.threePerspectiveCamera();
 var scene = ao.threeScene();

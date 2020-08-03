@@ -41217,6 +41217,8 @@ var THREE = _interopRequireWildcard(require("three"));
 
 var _threeUtil = require("./three-util");
 
+var _ = require("..");
+
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -41317,16 +41319,22 @@ var threeUseToneMapping = function threeUseToneMapping(_ref3) {
 exports.threeUseToneMapping = threeUseToneMapping;
 
 var threeAutoColorMGMT = function threeAutoColorMGMT() {
-  var ctx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _threeUtil.threeDefaultCtx;
-  ctx.renderer.outputEncoding = THREE.sRGBEncoding; // renderer.gammaOutput = true;
+  var use_srgb = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+  var ctx = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _threeUtil.threeDefaultCtx;
+
+  if (use_srgb) {
+    ctx.renderer.outputEncoding = _.three.sRGBEncoding;
+  } // ctx.renderer.gammaOutput = true;
+  // ctx.renderer.gammaFactor = 2.2;
   // renderer.gammaFactor = 2.2;
+
 
   ctx.renderer.physicallyCorrectLights = true;
   threeUseToneMapping({}, ctx);
 };
 
 exports.threeAutoColorMGMT = threeAutoColorMGMT;
-},{"three":"libao/node_modules/three/build/three.module.js","./three-util":"libao/fx/three-util.js"}],"libao/node_modules/postprocessing/build/postprocessing.esm.js":[function(require,module,exports) {
+},{"three":"libao/node_modules/three/build/three.module.js","./three-util":"libao/fx/three-util.js","..":"libao/index.js"}],"libao/node_modules/postprocessing/build/postprocessing.esm.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -52867,6 +52875,8 @@ var _CopyShader = require("three/examples/jsm/shaders/CopyShader.js");
 
 var _LuminosityHighPassShader = require("three/examples/jsm/shaders/LuminosityHighPassShader.js");
 
+var _ = require("../..");
+
 /**
  * @author spidersharma / http://eduperiment.com/
  */
@@ -52897,6 +52907,7 @@ var PatchedUnrealBloomPass = function PatchedUnrealBloomPass(resolution, strengt
     minFilter: _threeModule.LinearFilter,
     magFilter: _threeModule.LinearFilter,
     format: _threeModule.RGBAFormat,
+    encoding: _.three.sRGBEncoding,
     type: _threeModule.HalfFloatType
   };
   this.renderTargetsHorizontal = [];
@@ -53205,7 +53216,7 @@ PatchedUnrealBloomPass.prototype = Object.assign(Object.create(_Pass.Pass.protot
 });
 PatchedUnrealBloomPass.BlurDirectionX = new _threeModule.Vector2(1.0, 0.0);
 PatchedUnrealBloomPass.BlurDirectionY = new _threeModule.Vector2(0.0, 1.0);
-},{"three/build/three.module.js":"libao/node_modules/three/build/three.module.js","three/examples/jsm/postprocessing/Pass.js":"libao/node_modules/three/examples/jsm/postprocessing/Pass.js","three/examples/jsm/shaders/CopyShader.js":"libao/node_modules/three/examples/jsm/shaders/CopyShader.js","three/examples/jsm/shaders/LuminosityHighPassShader.js":"libao/node_modules/three/examples/jsm/shaders/LuminosityHighPassShader.js"}],"libao/fx/three-post.js":[function(require,module,exports) {
+},{"three/build/three.module.js":"libao/node_modules/three/build/three.module.js","three/examples/jsm/postprocessing/Pass.js":"libao/node_modules/three/examples/jsm/postprocessing/Pass.js","three/examples/jsm/shaders/CopyShader.js":"libao/node_modules/three/examples/jsm/shaders/CopyShader.js","three/examples/jsm/shaders/LuminosityHighPassShader.js":"libao/node_modules/three/examples/jsm/shaders/LuminosityHighPassShader.js","../..":"libao/index.js"}],"libao/fx/three-post.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -88982,7 +88993,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.prep = prep;
 exports.meta = meta;
 exports.inspect = inspect;
-exports.proxy_three_color = exports.h_onchange = exports.m_hook = exports.m_useMeta = exports.m_color = exports.m_text = exports.m_func = exports.m_opts = exports.m_number = exports.m_bool = exports.defaultDatGUI = void 0;
+exports.proxy_three_color = exports.proxy_ao_eased = exports.h_onchange = exports.m_hook = exports.m_useMeta = exports.m_color = exports.m_text = exports.m_func = exports.m_opts = exports.m_number = exports.m_bool = exports.defaultDatGUI = void 0;
 
 var gui = _interopRequireWildcard(require("dat.gui"));
 
@@ -89111,6 +89122,21 @@ var h_onchange = function h_onchange(fn) {
 };
 
 exports.h_onchange = h_onchange;
+
+var proxy_ao_eased = function proxy_ao_eased(name) {
+  var prop = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'to';
+  return {
+    mute: true,
+    get: function get(meta, obj) {
+      return obj[name][prop];
+    },
+    set: function set(meta, obj, value) {
+      return obj[name][prop] = value;
+    }
+  };
+};
+
+exports.proxy_ao_eased = proxy_ao_eased;
 
 var proxy_three_color = function proxy_three_color(name) {
   return {

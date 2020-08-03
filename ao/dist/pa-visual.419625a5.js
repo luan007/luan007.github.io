@@ -41217,6 +41217,8 @@ var THREE = _interopRequireWildcard(require("three"));
 
 var _threeUtil = require("./three-util");
 
+var _ = require("..");
+
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -41317,16 +41319,22 @@ var threeUseToneMapping = function threeUseToneMapping(_ref3) {
 exports.threeUseToneMapping = threeUseToneMapping;
 
 var threeAutoColorMGMT = function threeAutoColorMGMT() {
-  var ctx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _threeUtil.threeDefaultCtx;
-  ctx.renderer.outputEncoding = THREE.sRGBEncoding; // renderer.gammaOutput = true;
+  var use_srgb = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+  var ctx = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _threeUtil.threeDefaultCtx;
+
+  if (use_srgb) {
+    ctx.renderer.outputEncoding = _.three.sRGBEncoding;
+  } // ctx.renderer.gammaOutput = true;
+  // ctx.renderer.gammaFactor = 2.2;
   // renderer.gammaFactor = 2.2;
+
 
   ctx.renderer.physicallyCorrectLights = true;
   threeUseToneMapping({}, ctx);
 };
 
 exports.threeAutoColorMGMT = threeAutoColorMGMT;
-},{"three":"libao/node_modules/three/build/three.module.js","./three-util":"libao/fx/three-util.js"}],"libao/node_modules/postprocessing/build/postprocessing.esm.js":[function(require,module,exports) {
+},{"three":"libao/node_modules/three/build/three.module.js","./three-util":"libao/fx/three-util.js","..":"libao/index.js"}],"libao/node_modules/postprocessing/build/postprocessing.esm.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -52867,6 +52875,8 @@ var _CopyShader = require("three/examples/jsm/shaders/CopyShader.js");
 
 var _LuminosityHighPassShader = require("three/examples/jsm/shaders/LuminosityHighPassShader.js");
 
+var _ = require("../..");
+
 /**
  * @author spidersharma / http://eduperiment.com/
  */
@@ -52897,6 +52907,7 @@ var PatchedUnrealBloomPass = function PatchedUnrealBloomPass(resolution, strengt
     minFilter: _threeModule.LinearFilter,
     magFilter: _threeModule.LinearFilter,
     format: _threeModule.RGBAFormat,
+    encoding: _.three.sRGBEncoding,
     type: _threeModule.HalfFloatType
   };
   this.renderTargetsHorizontal = [];
@@ -53205,7 +53216,7 @@ PatchedUnrealBloomPass.prototype = Object.assign(Object.create(_Pass.Pass.protot
 });
 PatchedUnrealBloomPass.BlurDirectionX = new _threeModule.Vector2(1.0, 0.0);
 PatchedUnrealBloomPass.BlurDirectionY = new _threeModule.Vector2(0.0, 1.0);
-},{"three/build/three.module.js":"libao/node_modules/three/build/three.module.js","three/examples/jsm/postprocessing/Pass.js":"libao/node_modules/three/examples/jsm/postprocessing/Pass.js","three/examples/jsm/shaders/CopyShader.js":"libao/node_modules/three/examples/jsm/shaders/CopyShader.js","three/examples/jsm/shaders/LuminosityHighPassShader.js":"libao/node_modules/three/examples/jsm/shaders/LuminosityHighPassShader.js"}],"libao/fx/three-post.js":[function(require,module,exports) {
+},{"three/build/three.module.js":"libao/node_modules/three/build/three.module.js","three/examples/jsm/postprocessing/Pass.js":"libao/node_modules/three/examples/jsm/postprocessing/Pass.js","three/examples/jsm/shaders/CopyShader.js":"libao/node_modules/three/examples/jsm/shaders/CopyShader.js","three/examples/jsm/shaders/LuminosityHighPassShader.js":"libao/node_modules/three/examples/jsm/shaders/LuminosityHighPassShader.js","../..":"libao/index.js"}],"libao/fx/three-post.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -88982,7 +88993,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.prep = prep;
 exports.meta = meta;
 exports.inspect = inspect;
-exports.proxy_three_color = exports.h_onchange = exports.m_hook = exports.m_useMeta = exports.m_color = exports.m_text = exports.m_func = exports.m_opts = exports.m_number = exports.m_bool = exports.defaultDatGUI = void 0;
+exports.proxy_three_color = exports.proxy_ao_eased = exports.h_onchange = exports.m_hook = exports.m_useMeta = exports.m_color = exports.m_text = exports.m_func = exports.m_opts = exports.m_number = exports.m_bool = exports.defaultDatGUI = void 0;
 
 var gui = _interopRequireWildcard(require("dat.gui"));
 
@@ -89111,6 +89122,21 @@ var h_onchange = function h_onchange(fn) {
 };
 
 exports.h_onchange = h_onchange;
+
+var proxy_ao_eased = function proxy_ao_eased(name) {
+  var prop = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'to';
+  return {
+    mute: true,
+    get: function get(meta, obj) {
+      return obj[name][prop];
+    },
+    set: function set(meta, obj, value) {
+      return obj[name][prop] = value;
+    }
+  };
+};
+
+exports.proxy_ao_eased = proxy_ao_eased;
 
 var proxy_three_color = function proxy_three_color(name) {
   return {
@@ -89402,12 +89428,962 @@ var EventEmitter = _ev3.EventEmitter;
 exports.EventEmitter = EventEmitter;
 var buildr = _buildr;
 exports.buildr = buildr;
-},{"./core/index":"libao/core/index.js","./fx/index":"libao/fx/index.js","./buildr/index":"libao/buildr/index.js","vue":"libao/node_modules/vue/dist/vue.runtime.esm-bundler.js","three":"libao/node_modules/three/build/three.module.js","postprocessing":"libao/node_modules/postprocessing/build/postprocessing.esm.js","eventemitter3":"libao/node_modules/eventemitter3/index.js"}],"pa-visual.js":[function(require,module,exports) {
+},{"./core/index":"libao/core/index.js","./fx/index":"libao/fx/index.js","./buildr/index":"libao/buildr/index.js","vue":"libao/node_modules/vue/dist/vue.runtime.esm-bundler.js","three":"libao/node_modules/three/build/three.module.js","postprocessing":"libao/node_modules/postprocessing/build/postprocessing.esm.js","eventemitter3":"libao/node_modules/eventemitter3/index.js"}],"libao/node_modules/three/examples/jsm/objects/Reflector.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Reflector = void 0;
+
+var _threeModule = require("../../../build/three.module.js");
+
+var Reflector = function (geometry, options) {
+  _threeModule.Mesh.call(this, geometry);
+
+  this.type = 'Reflector';
+  var scope = this;
+  options = options || {};
+  var color = options.color !== undefined ? new _threeModule.Color(options.color) : new _threeModule.Color(0x7F7F7F);
+  var textureWidth = options.textureWidth || 512;
+  var textureHeight = options.textureHeight || 512;
+  var clipBias = options.clipBias || 0;
+  var shader = options.shader || Reflector.ReflectorShader; //
+
+  var reflectorPlane = new _threeModule.Plane();
+  var normal = new _threeModule.Vector3();
+  var reflectorWorldPosition = new _threeModule.Vector3();
+  var cameraWorldPosition = new _threeModule.Vector3();
+  var rotationMatrix = new _threeModule.Matrix4();
+  var lookAtPosition = new _threeModule.Vector3(0, 0, -1);
+  var clipPlane = new _threeModule.Vector4();
+  var view = new _threeModule.Vector3();
+  var target = new _threeModule.Vector3();
+  var q = new _threeModule.Vector4();
+  var textureMatrix = new _threeModule.Matrix4();
+  var virtualCamera = new _threeModule.PerspectiveCamera();
+  var parameters = {
+    minFilter: _threeModule.LinearFilter,
+    magFilter: _threeModule.LinearFilter,
+    format: _threeModule.RGBFormat,
+    stencilBuffer: false
+  };
+  var renderTarget = new _threeModule.WebGLRenderTarget(textureWidth, textureHeight, parameters);
+
+  if (!_threeModule.MathUtils.isPowerOfTwo(textureWidth) || !_threeModule.MathUtils.isPowerOfTwo(textureHeight)) {
+    renderTarget.texture.generateMipmaps = false;
+  }
+
+  var material = new _threeModule.ShaderMaterial({
+    uniforms: _threeModule.UniformsUtils.clone(shader.uniforms),
+    fragmentShader: shader.fragmentShader,
+    vertexShader: shader.vertexShader
+  });
+  material.uniforms["tDiffuse"].value = renderTarget.texture;
+  material.uniforms["color"].value = color;
+  material.uniforms["textureMatrix"].value = textureMatrix;
+  this.material = material;
+
+  this.onBeforeRender = function (renderer, scene, camera) {
+    reflectorWorldPosition.setFromMatrixPosition(scope.matrixWorld);
+    cameraWorldPosition.setFromMatrixPosition(camera.matrixWorld);
+    rotationMatrix.extractRotation(scope.matrixWorld);
+    normal.set(0, 0, 1);
+    normal.applyMatrix4(rotationMatrix);
+    view.subVectors(reflectorWorldPosition, cameraWorldPosition); // Avoid rendering when reflector is facing away
+
+    if (view.dot(normal) > 0) return;
+    view.reflect(normal).negate();
+    view.add(reflectorWorldPosition);
+    rotationMatrix.extractRotation(camera.matrixWorld);
+    lookAtPosition.set(0, 0, -1);
+    lookAtPosition.applyMatrix4(rotationMatrix);
+    lookAtPosition.add(cameraWorldPosition);
+    target.subVectors(reflectorWorldPosition, lookAtPosition);
+    target.reflect(normal).negate();
+    target.add(reflectorWorldPosition);
+    virtualCamera.position.copy(view);
+    virtualCamera.up.set(0, 1, 0);
+    virtualCamera.up.applyMatrix4(rotationMatrix);
+    virtualCamera.up.reflect(normal);
+    virtualCamera.lookAt(target);
+    virtualCamera.far = camera.far; // Used in WebGLBackground
+
+    virtualCamera.updateMatrixWorld();
+    virtualCamera.projectionMatrix.copy(camera.projectionMatrix); // Update the texture matrix
+
+    textureMatrix.set(0.5, 0.0, 0.0, 0.5, 0.0, 0.5, 0.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0, 0.0, 1.0);
+    textureMatrix.multiply(virtualCamera.projectionMatrix);
+    textureMatrix.multiply(virtualCamera.matrixWorldInverse);
+    textureMatrix.multiply(scope.matrixWorld); // Now update projection matrix with new clip plane, implementing code from: http://www.terathon.com/code/oblique.html
+    // Paper explaining this technique: http://www.terathon.com/lengyel/Lengyel-Oblique.pdf
+
+    reflectorPlane.setFromNormalAndCoplanarPoint(normal, reflectorWorldPosition);
+    reflectorPlane.applyMatrix4(virtualCamera.matrixWorldInverse);
+    clipPlane.set(reflectorPlane.normal.x, reflectorPlane.normal.y, reflectorPlane.normal.z, reflectorPlane.constant);
+    var projectionMatrix = virtualCamera.projectionMatrix;
+    q.x = (Math.sign(clipPlane.x) + projectionMatrix.elements[8]) / projectionMatrix.elements[0];
+    q.y = (Math.sign(clipPlane.y) + projectionMatrix.elements[9]) / projectionMatrix.elements[5];
+    q.z = -1.0;
+    q.w = (1.0 + projectionMatrix.elements[10]) / projectionMatrix.elements[14]; // Calculate the scaled plane vector
+
+    clipPlane.multiplyScalar(2.0 / clipPlane.dot(q)); // Replacing the third row of the projection matrix
+
+    projectionMatrix.elements[2] = clipPlane.x;
+    projectionMatrix.elements[6] = clipPlane.y;
+    projectionMatrix.elements[10] = clipPlane.z + 1.0 - clipBias;
+    projectionMatrix.elements[14] = clipPlane.w; // Render
+
+    renderTarget.texture.encoding = renderer.outputEncoding;
+    scope.visible = false;
+    var currentRenderTarget = renderer.getRenderTarget();
+    var currentXrEnabled = renderer.xr.enabled;
+    var currentShadowAutoUpdate = renderer.shadowMap.autoUpdate;
+    renderer.xr.enabled = false; // Avoid camera modification
+
+    renderer.shadowMap.autoUpdate = false; // Avoid re-computing shadows
+
+    renderer.setRenderTarget(renderTarget);
+    renderer.state.buffers.depth.setMask(true); // make sure the depth buffer is writable so it can be properly cleared, see #18897
+
+    if (renderer.autoClear === false) renderer.clear();
+    renderer.render(scene, virtualCamera);
+    renderer.xr.enabled = currentXrEnabled;
+    renderer.shadowMap.autoUpdate = currentShadowAutoUpdate;
+    renderer.setRenderTarget(currentRenderTarget); // Restore viewport
+
+    var viewport = camera.viewport;
+
+    if (viewport !== undefined) {
+      renderer.state.viewport(viewport);
+    }
+
+    scope.visible = true;
+  };
+
+  this.getRenderTarget = function () {
+    return renderTarget;
+  };
+};
+
+exports.Reflector = Reflector;
+Reflector.prototype = Object.create(_threeModule.Mesh.prototype);
+Reflector.prototype.constructor = Reflector;
+Reflector.ReflectorShader = {
+  uniforms: {
+    'color': {
+      value: null
+    },
+    'tDiffuse': {
+      value: null
+    },
+    'textureMatrix': {
+      value: null
+    }
+  },
+  vertexShader: ['uniform mat4 textureMatrix;', 'varying vec4 vUv;', 'void main() {', '	vUv = textureMatrix * vec4( position, 1.0 );', '	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );', '}'].join('\n'),
+  fragmentShader: ['uniform vec3 color;', 'uniform sampler2D tDiffuse;', 'varying vec4 vUv;', 'float blendOverlay( float base, float blend ) {', '	return( base < 0.5 ? ( 2.0 * base * blend ) : ( 1.0 - 2.0 * ( 1.0 - base ) * ( 1.0 - blend ) ) );', '}', 'vec3 blendOverlay( vec3 base, vec3 blend ) {', '	return vec3( blendOverlay( base.r, blend.r ), blendOverlay( base.g, blend.g ), blendOverlay( base.b, blend.b ) );', '}', 'void main() {', '	vec4 base = texture2DProj( tDiffuse, vUv );', '	gl_FragColor = vec4( blendOverlay( base.rgb, color ), 1.0 );', '}'].join('\n')
+};
+},{"../../../build/three.module.js":"libao/node_modules/three/build/three.module.js"}],"libao/node_modules/three/examples/jsm/objects/Refractor.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Refractor = void 0;
+
+var _threeModule = require("../../../build/three.module.js");
+
+var Refractor = function (geometry, options) {
+  _threeModule.Mesh.call(this, geometry);
+
+  this.type = 'Refractor';
+  var scope = this;
+  options = options || {};
+  var color = options.color !== undefined ? new _threeModule.Color(options.color) : new _threeModule.Color(0x7F7F7F);
+  var textureWidth = options.textureWidth || 512;
+  var textureHeight = options.textureHeight || 512;
+  var clipBias = options.clipBias || 0;
+  var shader = options.shader || Refractor.RefractorShader; //
+
+  var virtualCamera = new _threeModule.PerspectiveCamera();
+  virtualCamera.matrixAutoUpdate = false;
+  virtualCamera.userData.refractor = true; //
+
+  var refractorPlane = new _threeModule.Plane();
+  var textureMatrix = new _threeModule.Matrix4(); // render target
+
+  var parameters = {
+    minFilter: _threeModule.LinearFilter,
+    magFilter: _threeModule.LinearFilter,
+    format: _threeModule.RGBFormat,
+    stencilBuffer: false
+  };
+  var renderTarget = new _threeModule.WebGLRenderTarget(textureWidth, textureHeight, parameters);
+
+  if (!_threeModule.MathUtils.isPowerOfTwo(textureWidth) || !_threeModule.MathUtils.isPowerOfTwo(textureHeight)) {
+    renderTarget.texture.generateMipmaps = false;
+  } // material
+
+
+  this.material = new _threeModule.ShaderMaterial({
+    uniforms: _threeModule.UniformsUtils.clone(shader.uniforms),
+    vertexShader: shader.vertexShader,
+    fragmentShader: shader.fragmentShader,
+    transparent: true // ensures, refractors are drawn from farthest to closest
+
+  });
+  this.material.uniforms["color"].value = color;
+  this.material.uniforms["tDiffuse"].value = renderTarget.texture;
+  this.material.uniforms["textureMatrix"].value = textureMatrix; // functions
+
+  var visible = function () {
+    var refractorWorldPosition = new _threeModule.Vector3();
+    var cameraWorldPosition = new _threeModule.Vector3();
+    var rotationMatrix = new _threeModule.Matrix4();
+    var view = new _threeModule.Vector3();
+    var normal = new _threeModule.Vector3();
+    return function visible(camera) {
+      refractorWorldPosition.setFromMatrixPosition(scope.matrixWorld);
+      cameraWorldPosition.setFromMatrixPosition(camera.matrixWorld);
+      view.subVectors(refractorWorldPosition, cameraWorldPosition);
+      rotationMatrix.extractRotation(scope.matrixWorld);
+      normal.set(0, 0, 1);
+      normal.applyMatrix4(rotationMatrix);
+      return view.dot(normal) < 0;
+    };
+  }();
+
+  var updateRefractorPlane = function () {
+    var normal = new _threeModule.Vector3();
+    var position = new _threeModule.Vector3();
+    var quaternion = new _threeModule.Quaternion();
+    var scale = new _threeModule.Vector3();
+    return function updateRefractorPlane() {
+      scope.matrixWorld.decompose(position, quaternion, scale);
+      normal.set(0, 0, 1).applyQuaternion(quaternion).normalize(); // flip the normal because we want to cull everything above the plane
+
+      normal.negate();
+      refractorPlane.setFromNormalAndCoplanarPoint(normal, position);
+    };
+  }();
+
+  var updateVirtualCamera = function () {
+    var clipPlane = new _threeModule.Plane();
+    var clipVector = new _threeModule.Vector4();
+    var q = new _threeModule.Vector4();
+    return function updateVirtualCamera(camera) {
+      virtualCamera.matrixWorld.copy(camera.matrixWorld);
+      virtualCamera.matrixWorldInverse.getInverse(virtualCamera.matrixWorld);
+      virtualCamera.projectionMatrix.copy(camera.projectionMatrix);
+      virtualCamera.far = camera.far; // used in WebGLBackground
+      // The following code creates an oblique view frustum for clipping.
+      // see: Lengyel, Eric. “Oblique View Frustum Depth Projection and Clipping”.
+      // Journal of Game Development, Vol. 1, No. 2 (2005), Charles River Media, pp. 5–16
+
+      clipPlane.copy(refractorPlane);
+      clipPlane.applyMatrix4(virtualCamera.matrixWorldInverse);
+      clipVector.set(clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.constant); // calculate the clip-space corner point opposite the clipping plane and
+      // transform it into camera space by multiplying it by the inverse of the projection matrix
+
+      var projectionMatrix = virtualCamera.projectionMatrix;
+      q.x = (Math.sign(clipVector.x) + projectionMatrix.elements[8]) / projectionMatrix.elements[0];
+      q.y = (Math.sign(clipVector.y) + projectionMatrix.elements[9]) / projectionMatrix.elements[5];
+      q.z = -1.0;
+      q.w = (1.0 + projectionMatrix.elements[10]) / projectionMatrix.elements[14]; // calculate the scaled plane vector
+
+      clipVector.multiplyScalar(2.0 / clipVector.dot(q)); // replacing the third row of the projection matrix
+
+      projectionMatrix.elements[2] = clipVector.x;
+      projectionMatrix.elements[6] = clipVector.y;
+      projectionMatrix.elements[10] = clipVector.z + 1.0 - clipBias;
+      projectionMatrix.elements[14] = clipVector.w;
+    };
+  }(); // This will update the texture matrix that is used for projective texture mapping in the shader.
+  // see: http://developer.download.nvidia.com/assets/gamedev/docs/projective_texture_mapping.pdf
+
+
+  function updateTextureMatrix(camera) {
+    // this matrix does range mapping to [ 0, 1 ]
+    textureMatrix.set(0.5, 0.0, 0.0, 0.5, 0.0, 0.5, 0.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0, 0.0, 1.0); // we use "Object Linear Texgen", so we need to multiply the texture matrix T
+    // (matrix above) with the projection and view matrix of the virtual camera
+    // and the model matrix of the refractor
+
+    textureMatrix.multiply(camera.projectionMatrix);
+    textureMatrix.multiply(camera.matrixWorldInverse);
+    textureMatrix.multiply(scope.matrixWorld);
+  } //
+
+
+  function render(renderer, scene, camera) {
+    scope.visible = false;
+    var currentRenderTarget = renderer.getRenderTarget();
+    var currentXrEnabled = renderer.xr.enabled;
+    var currentShadowAutoUpdate = renderer.shadowMap.autoUpdate;
+    renderer.xr.enabled = false; // avoid camera modification
+
+    renderer.shadowMap.autoUpdate = false; // avoid re-computing shadows
+
+    renderer.setRenderTarget(renderTarget);
+    if (renderer.autoClear === false) renderer.clear();
+    renderer.render(scene, virtualCamera);
+    renderer.xr.enabled = currentXrEnabled;
+    renderer.shadowMap.autoUpdate = currentShadowAutoUpdate;
+    renderer.setRenderTarget(currentRenderTarget); // restore viewport
+
+    var viewport = camera.viewport;
+
+    if (viewport !== undefined) {
+      renderer.state.viewport(viewport);
+    }
+
+    scope.visible = true;
+  } //
+
+
+  this.onBeforeRender = function (renderer, scene, camera) {
+    // Render
+    renderTarget.texture.encoding = renderer.outputEncoding; // ensure refractors are rendered only once per frame
+
+    if (camera.userData.refractor === true) return; // avoid rendering when the refractor is viewed from behind
+
+    if (!visible(camera) === true) return; // update
+
+    updateRefractorPlane();
+    updateTextureMatrix(camera);
+    updateVirtualCamera(camera);
+    render(renderer, scene, camera);
+  };
+
+  this.getRenderTarget = function () {
+    return renderTarget;
+  };
+};
+
+exports.Refractor = Refractor;
+Refractor.prototype = Object.create(_threeModule.Mesh.prototype);
+Refractor.prototype.constructor = Refractor;
+Refractor.RefractorShader = {
+  uniforms: {
+    'color': {
+      value: null
+    },
+    'tDiffuse': {
+      value: null
+    },
+    'textureMatrix': {
+      value: null
+    }
+  },
+  vertexShader: ['uniform mat4 textureMatrix;', 'varying vec4 vUv;', 'void main() {', '	vUv = textureMatrix * vec4( position, 1.0 );', '	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );', '}'].join('\n'),
+  fragmentShader: ['uniform vec3 color;', 'uniform sampler2D tDiffuse;', 'varying vec4 vUv;', 'float blendOverlay( float base, float blend ) {', '	return( base < 0.5 ? ( 2.0 * base * blend ) : ( 1.0 - 2.0 * ( 1.0 - base ) * ( 1.0 - blend ) ) );', '}', 'vec3 blendOverlay( vec3 base, vec3 blend ) {', '	return vec3( blendOverlay( base.r, blend.r ), blendOverlay( base.g, blend.g ), blendOverlay( base.b, blend.b ) );', '}', 'void main() {', '	vec4 base = texture2DProj( tDiffuse, vUv );', '	gl_FragColor = vec4( blendOverlay( base.rgb, color ), 1.0 );', '}'].join('\n')
+};
+},{"../../../build/three.module.js":"libao/node_modules/three/build/three.module.js"}],"libao/node_modules/three/examples/jsm/objects/Water2.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Water = void 0;
+
+var _threeModule = require("../../../build/three.module.js");
+
+var _Reflector = require("../objects/Reflector.js");
+
+var _Refractor = require("../objects/Refractor.js");
+
+var _index = require("../../../../../index.js");
+
+/**
+ * References:
+ *	http://www.valvesoftware.com/publications/2010/siggraph2010_vlachos_waterflow.pdf
+ * 	http://graphicsrunner.blogspot.de/2010/08/water-using-flow-maps.html
+ *
+ */
+var Water = function (geometry, options) {
+  _threeModule.Mesh.call(this, geometry);
+
+  this.type = 'Water';
+  var scope = this;
+  options = options || {};
+  var color = options.color !== undefined ? new _threeModule.Color(options.color) : new _threeModule.Color(0xFFFFFF);
+  var textureWidth = options.textureWidth || 512;
+  var textureHeight = options.textureHeight || 512;
+  var clipBias = options.clipBias || 0;
+  var flowDirection = options.flowDirection || new _threeModule.Vector2(1, 0);
+  var flowSpeed = options.flowSpeed || 0.03;
+  var reflectivity = options.reflectivity || 0.02;
+  var scale = options.scale || 1;
+  var shader = options.shader || Water.WaterShader;
+  var encoding = options.encoding !== undefined ? options.encoding : _threeModule.LinearEncoding;
+  var textureLoader = new _threeModule.TextureLoader();
+  var flowMap = options.flowMap || undefined;
+  var normalMap0 = options.normalMap0 || textureLoader.load('textures/water/Water_1_M_Normal.jpg');
+  var normalMap1 = options.normalMap1 || textureLoader.load('textures/water/Water_2_M_Normal.jpg');
+  var cycle = 0.15; // a cycle of a flow map phase
+
+  var halfCycle = cycle * 0.5;
+  var textureMatrix = new _threeModule.Matrix4();
+  var clock = new _threeModule.Clock(); // internal components
+
+  if (_Reflector.Reflector === undefined) {
+    console.error('THREE.Water: Required component Reflector not found.');
+    return;
+  }
+
+  if (_Refractor.Refractor === undefined) {
+    console.error('THREE.Water: Required component Refractor not found.');
+    return;
+  }
+
+  var reflector = new _Reflector.Reflector(geometry, {
+    textureWidth: textureWidth,
+    textureHeight: textureHeight,
+    clipBias: clipBias,
+    encoding: encoding
+  });
+  var refractor = new _Refractor.Refractor(geometry, {
+    textureWidth: textureWidth,
+    textureHeight: textureHeight,
+    clipBias: clipBias,
+    encoding: encoding
+  });
+  reflector.matrixAutoUpdate = false;
+  refractor.matrixAutoUpdate = false; // material
+
+  this.material = new _threeModule.ShaderMaterial({
+    uniforms: _threeModule.UniformsUtils.merge([_threeModule.UniformsLib['fog'], shader.uniforms]),
+    vertexShader: shader.vertexShader,
+    fragmentShader: shader.fragmentShader,
+    transparent: true,
+    fog: true
+  });
+
+  if (flowMap !== undefined) {
+    this.material.defines.USE_FLOWMAP = '';
+    this.material.uniforms["tFlowMap"] = {
+      type: 't',
+      value: flowMap
+    };
+  } else {
+    this.material.uniforms["flowDirection"] = {
+      type: 'v2',
+      value: flowDirection
+    };
+  } // maps
+
+
+  normalMap0.wrapS = normalMap0.wrapT = _threeModule.RepeatWrapping;
+  normalMap1.wrapS = normalMap1.wrapT = _threeModule.RepeatWrapping;
+  this.material.uniforms["tReflectionMap"].value = reflector.getRenderTarget().texture;
+  this.material.uniforms["tRefractionMap"].value = refractor.getRenderTarget().texture;
+  this.material.uniforms["tNormalMap0"].value = normalMap0;
+  this.material.uniforms["tNormalMap1"].value = normalMap1; // water
+
+  this.material.uniforms["color"].value = color;
+  this.material.uniforms["reflectivity"].value = reflectivity;
+  this.material.uniforms["textureMatrix"].value = textureMatrix; // inital values
+
+  this.material.uniforms["config"].value.x = 0; // flowMapOffset0
+
+  this.material.uniforms["config"].value.y = halfCycle; // flowMapOffset1
+
+  this.material.uniforms["config"].value.z = halfCycle; // halfCycle
+
+  this.material.uniforms["config"].value.w = scale; // scale
+  // functions
+
+  function updateTextureMatrix(camera) {
+    textureMatrix.set(0.5, 0.0, 0.0, 0.5, 0.0, 0.5, 0.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0, 0.0, 1.0);
+    textureMatrix.multiply(camera.projectionMatrix);
+    textureMatrix.multiply(camera.matrixWorldInverse);
+    textureMatrix.multiply(scope.matrixWorld);
+  }
+
+  function updateFlow() {
+    var delta = clock.getDelta();
+    var config = scope.material.uniforms["config"]; // config.value.x += flowSpeed * delta; // flowMapOffset0
+    // config.value.y = config.value.x + halfCycle; // flowMapOffset1
+    // Important: The distance between offsets should be always the value of "halfCycle".
+    // Moreover, both offsets should be in the range of [ 0, cycle ].
+    // This approach ensures a smooth water flow and avoids "reset" effects.
+
+    if (config.value.x >= cycle) {
+      config.value.x = 0;
+      config.value.y = halfCycle;
+    } else if (config.value.y >= cycle) {
+      config.value.y = config.value.y - cycle;
+    }
+  } //
+
+
+  this.onBeforeRender = function (renderer, scene, camera) {
+    updateTextureMatrix(camera);
+    updateFlow();
+    scope.visible = false;
+    reflector.matrixWorld.copy(scope.matrixWorld);
+    refractor.matrixWorld.copy(scope.matrixWorld);
+    reflector.onBeforeRender(renderer, scene, camera);
+    refractor.onBeforeRender(renderer, scene, camera);
+    scope.visible = true;
+  };
+};
+
+exports.Water = Water;
+Water.prototype = Object.create(_threeModule.Mesh.prototype);
+Water.prototype.constructor = Water;
+Water.WaterShader = {
+  uniforms: {
+    'color': {
+      type: 'c',
+      value: null
+    },
+    'reflectivity': {
+      type: 'f',
+      value: 0
+    },
+    'tReflectionMap': {
+      type: 't',
+      value: null
+    },
+    'tRefractionMap': {
+      type: 't',
+      value: null
+    },
+    'tNormalMap0': {
+      type: 't',
+      value: null
+    },
+    'tNormalMap1': {
+      type: 't',
+      value: null
+    },
+    'textureMatrix': {
+      type: 'm4',
+      value: null
+    },
+    'config': {
+      type: 'v4',
+      value: new _threeModule.Vector4()
+    }
+  },
+  vertexShader: ['#include <common>', '#include <fog_pars_vertex>', '#include <logdepthbuf_pars_vertex>', 'uniform mat4 textureMatrix;', 'varying vec4 vCoord;', 'varying vec2 vUv;', 'varying vec3 vToEye;', 'void main() {', '	vUv = uv;', '	vCoord = textureMatrix * vec4( position, 1.0 );', '	vec4 worldPosition = modelMatrix * vec4( position, 1.0 );', '	vToEye = cameraPosition - worldPosition.xyz;', '	vec4 mvPosition =  viewMatrix * worldPosition;', // used in fog_vertex
+  '	gl_Position = projectionMatrix * mvPosition;', '	#include <logdepthbuf_vertex>', '	#include <fog_vertex>', '}'].join('\n'),
+  fragmentShader: ['#include <common>', '#include <fog_pars_fragment>', '#include <logdepthbuf_pars_fragment>', 'uniform sampler2D tReflectionMap;', 'uniform sampler2D tRefractionMap;', 'uniform sampler2D tNormalMap0;', 'uniform sampler2D tNormalMap1;', '#ifdef USE_FLOWMAP', '	uniform sampler2D tFlowMap;', '#else', '	uniform vec2 flowDirection;', '#endif', 'uniform vec3 color;', 'uniform float reflectivity;', 'uniform vec4 config;', 'varying vec4 vCoord;', 'varying vec2 vUv;', 'varying vec3 vToEye;', 'void main() {', '	#include <logdepthbuf_fragment>', '	float flowMapOffset0 = config.x;', '	float flowMapOffset1 = config.y;', '	float halfCycle = config.z;', '	float scale = config.w;', '	vec3 toEye = normalize( vToEye );', // determine flow direction
+  '	vec2 flow;', '	#ifdef USE_FLOWMAP', '		flow = texture2D( tFlowMap, vUv ).rg * 2.0 - 1.0;', '	#else', '		flow = flowDirection;', '	#endif', '	flow.x *= - 1.0;', // sample normal maps (distort uvs with flowdata)
+  '	vec4 normalColor0 = texture2D( tNormalMap0, ( vUv * scale ) + flow * flowMapOffset0 );', '	vec4 normalColor1 = texture2D( tNormalMap1, ( vUv * scale ) + flow * flowMapOffset1 );', // linear interpolate to get the final normal color
+  '	float flowLerp = abs( halfCycle - flowMapOffset0 ) / halfCycle;', '	vec4 normalColor = mix( normalColor0, normalColor1, flowLerp );', // calculate normal vector
+  '	vec3 normal = normalize( vec3( normalColor.r * 2.0 - 1.0, normalColor.b,  normalColor.g * 2.0 - 1.0 ) );', // calculate the fresnel term to blend reflection and refraction maps
+  '	float theta = max( dot( toEye, normal ), 0.0 );', '	float reflectance = reflectivity + ( 1.0 - reflectivity ) * pow( ( 1.0 - theta ), 5.0 );', // calculate final uv coords
+  '	vec3 coord = vCoord.xyz / vCoord.w;', '	vec2 uv = coord.xy + coord.z * normal.xz * 0.04;', '	vec4 reflectColor = texture2D( tReflectionMap, vec2( 1.0 - uv.x, uv.y ) );', '	vec4 refractColor = texture2D( tRefractionMap, uv );', // multiply water color with the mix of both textures
+  '	gl_FragColor = vec4( color, 1.0 ) * mix( refractColor, reflectColor, reflectance );', '	#include <tonemapping_fragment>', '	#include <encodings_fragment>', '	#include <fog_fragment>', '}'].join('\n')
+};
+},{"../../../build/three.module.js":"libao/node_modules/three/build/three.module.js","../objects/Reflector.js":"libao/node_modules/three/examples/jsm/objects/Reflector.js","../objects/Refractor.js":"libao/node_modules/three/examples/jsm/objects/Refractor.js","../../../../../index.js":"libao/index.js"}],"libao/node_modules/three/examples/jsm/lights/LightProbeGenerator.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LightProbeGenerator = void 0;
+
+var _threeModule = require("../../../build/three.module.js");
+
+var LightProbeGenerator = {
+  // https://www.ppsloan.org/publications/StupidSH36.pdf
+  fromCubeTexture: function (cubeTexture) {
+    var norm,
+        lengthSq,
+        weight,
+        totalWeight = 0;
+    var coord = new _threeModule.Vector3();
+    var dir = new _threeModule.Vector3();
+    var color = new _threeModule.Color();
+    var shBasis = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+    var sh = new _threeModule.SphericalHarmonics3();
+    var shCoefficients = sh.coefficients;
+
+    for (var faceIndex = 0; faceIndex < 6; faceIndex++) {
+      var image = cubeTexture.image[faceIndex];
+      var width = image.width;
+      var height = image.height;
+      var canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      var context = canvas.getContext('2d');
+      context.drawImage(image, 0, 0, width, height);
+      var imageData = context.getImageData(0, 0, width, height);
+      var data = imageData.data;
+      var imageWidth = imageData.width; // assumed to be square
+
+      var pixelSize = 2 / imageWidth;
+
+      for (var i = 0, il = data.length; i < il; i += 4) {
+        // RGBA assumed
+        // pixel color
+        color.setRGB(data[i] / 255, data[i + 1] / 255, data[i + 2] / 255); // convert to linear color space
+
+        convertColorToLinear(color, cubeTexture.encoding); // pixel coordinate on unit cube
+
+        var pixelIndex = i / 4;
+        var col = -1 + (pixelIndex % imageWidth + 0.5) * pixelSize;
+        var row = 1 - (Math.floor(pixelIndex / imageWidth) + 0.5) * pixelSize;
+
+        switch (faceIndex) {
+          case 0:
+            coord.set(-1, row, -col);
+            break;
+
+          case 1:
+            coord.set(1, row, col);
+            break;
+
+          case 2:
+            coord.set(-col, 1, -row);
+            break;
+
+          case 3:
+            coord.set(-col, -1, row);
+            break;
+
+          case 4:
+            coord.set(-col, row, 1);
+            break;
+
+          case 5:
+            coord.set(col, row, -1);
+            break;
+        } // weight assigned to this pixel
+
+
+        lengthSq = coord.lengthSq();
+        weight = 4 / (Math.sqrt(lengthSq) * lengthSq);
+        totalWeight += weight; // direction vector to this pixel
+
+        dir.copy(coord).normalize(); // evaluate SH basis functions in direction dir
+
+        _threeModule.SphericalHarmonics3.getBasisAt(dir, shBasis); // accummuulate
+
+
+        for (var j = 0; j < 9; j++) {
+          shCoefficients[j].x += shBasis[j] * color.r * weight;
+          shCoefficients[j].y += shBasis[j] * color.g * weight;
+          shCoefficients[j].z += shBasis[j] * color.b * weight;
+        }
+      }
+    } // normalize
+
+
+    norm = 4 * Math.PI / totalWeight;
+
+    for (var j = 0; j < 9; j++) {
+      shCoefficients[j].x *= norm;
+      shCoefficients[j].y *= norm;
+      shCoefficients[j].z *= norm;
+    }
+
+    return new _threeModule.LightProbe(sh);
+  },
+  fromCubeRenderTarget: function (renderer, cubeRenderTarget) {
+    // The renderTarget must be set to RGBA in order to make readRenderTargetPixels works
+    var norm,
+        lengthSq,
+        weight,
+        totalWeight = 0;
+    var coord = new _threeModule.Vector3();
+    var dir = new _threeModule.Vector3();
+    var color = new _threeModule.Color();
+    var shBasis = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+    var sh = new _threeModule.SphericalHarmonics3();
+    var shCoefficients = sh.coefficients;
+
+    for (var faceIndex = 0; faceIndex < 6; faceIndex++) {
+      var imageWidth = cubeRenderTarget.width; // assumed to be square
+
+      var data = new Uint8Array(imageWidth * imageWidth * 4);
+      renderer.readRenderTargetPixels(cubeRenderTarget, 0, 0, imageWidth, imageWidth, data, faceIndex);
+      var pixelSize = 2 / imageWidth;
+
+      for (var i = 0, il = data.length; i < il; i += 4) {
+        // RGBA assumed
+        // pixel color
+        color.setRGB(data[i] / 255, data[i + 1] / 255, data[i + 2] / 255); // convert to linear color space
+
+        convertColorToLinear(color, cubeRenderTarget.texture.encoding); // pixel coordinate on unit cube
+
+        var pixelIndex = i / 4;
+        var col = -1 + (pixelIndex % imageWidth + 0.5) * pixelSize;
+        var row = 1 - (Math.floor(pixelIndex / imageWidth) + 0.5) * pixelSize;
+
+        switch (faceIndex) {
+          case 0:
+            coord.set(1, row, -col);
+            break;
+
+          case 1:
+            coord.set(-1, row, col);
+            break;
+
+          case 2:
+            coord.set(col, 1, -row);
+            break;
+
+          case 3:
+            coord.set(col, -1, row);
+            break;
+
+          case 4:
+            coord.set(col, row, 1);
+            break;
+
+          case 5:
+            coord.set(-col, row, -1);
+            break;
+        } // weight assigned to this pixel
+
+
+        lengthSq = coord.lengthSq();
+        weight = 4 / (Math.sqrt(lengthSq) * lengthSq);
+        totalWeight += weight; // direction vector to this pixel
+
+        dir.copy(coord).normalize(); // evaluate SH basis functions in direction dir
+
+        _threeModule.SphericalHarmonics3.getBasisAt(dir, shBasis); // accummuulate
+
+
+        for (var j = 0; j < 9; j++) {
+          shCoefficients[j].x += shBasis[j] * color.r * weight;
+          shCoefficients[j].y += shBasis[j] * color.g * weight;
+          shCoefficients[j].z += shBasis[j] * color.b * weight;
+        }
+      }
+    } // normalize
+
+
+    norm = 4 * Math.PI / totalWeight;
+
+    for (var j = 0; j < 9; j++) {
+      shCoefficients[j].x *= norm;
+      shCoefficients[j].y *= norm;
+      shCoefficients[j].z *= norm;
+    }
+
+    return new _threeModule.LightProbe(sh);
+  }
+};
+exports.LightProbeGenerator = LightProbeGenerator;
+
+var convertColorToLinear = function (color, encoding) {
+  switch (encoding) {
+    case _threeModule.sRGBEncoding:
+      color.convertSRGBToLinear();
+      break;
+
+    case _threeModule.LinearEncoding:
+      break;
+
+    default:
+      console.warn('WARNING: LightProbeGenerator convertColorToLinear() encountered an unsupported encoding.');
+      break;
+  }
+
+  return color;
+};
+},{"../../../build/three.module.js":"libao/node_modules/three/build/three.module.js"}],"libao/fx/patch/ReflectorWithDepth.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Reflector = void 0;
+
+var _threeModule = require("three/build/three.module.js");
+
+var three = _interopRequireWildcard(require("three"));
+
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+var Reflector = function Reflector(geometry, options) {
+  _threeModule.Mesh.call(this, geometry);
+
+  this.type = 'Reflector';
+  this.cameraNear = 0;
+  this.cameraFar = 1000;
+  var scope = this;
+  options = options || {};
+  var color = options.color !== undefined ? new _threeModule.Color(options.color) : new _threeModule.Color(0x7F7F7F);
+  var textureWidth = options.textureWidth || 1024;
+  var textureHeight = options.textureHeight || 1024;
+  var clipBias = options.clipBias || 0;
+  var shader = options.shader || Reflector.ReflectorShader; //
+
+  var reflectorPlane = new _threeModule.Plane();
+  var normal = new _threeModule.Vector3();
+  var reflectorWorldPosition = new _threeModule.Vector3();
+  var cameraWorldPosition = new _threeModule.Vector3();
+  var rotationMatrix = new _threeModule.Matrix4();
+  var lookAtPosition = new _threeModule.Vector3(0, 0, -1);
+  var clipPlane = new _threeModule.Vector4();
+  var view = new _threeModule.Vector3();
+  var target = new _threeModule.Vector3();
+  var q = new _threeModule.Vector4();
+  var textureMatrix = new _threeModule.Matrix4();
+  var virtualCamera = new _threeModule.PerspectiveCamera();
+  var parameters = {
+    minFilter: _threeModule.LinearFilter,
+    magFilter: _threeModule.LinearFilter,
+    format: _threeModule.RGBFormat,
+    stencilBuffer: false
+  };
+  var renderTarget = new _threeModule.WebGLRenderTarget(textureWidth, textureHeight, parameters);
+  renderTarget.depthBuffer = true;
+  renderTarget.depthTexture = new three.DepthTexture();
+  renderTarget.depthTexture.type = three.UnsignedShortType;
+
+  if (!_threeModule.MathUtils.isPowerOfTwo(textureWidth) || !_threeModule.MathUtils.isPowerOfTwo(textureHeight)) {
+    renderTarget.texture.generateMipmaps = false;
+  }
+
+  var material = new _threeModule.ShaderMaterial({
+    uniforms: _threeModule.UniformsUtils.clone(shader.uniforms),
+    fragmentShader: shader.fragmentShader,
+    vertexShader: shader.vertexShader,
+    transparent: true
+  });
+  material.uniforms["tDiffuse"].value = renderTarget.texture;
+  material.uniforms["tDepth"].value = renderTarget.depthTexture;
+  material.uniforms["color"].value = color;
+  material.uniforms["textureMatrix"].value = textureMatrix;
+  this.material = material;
+
+  this.onBeforeRender = function (renderer, scene, camera) {
+    reflectorWorldPosition.setFromMatrixPosition(scope.matrixWorld);
+    cameraWorldPosition.setFromMatrixPosition(camera.matrixWorld);
+    rotationMatrix.extractRotation(scope.matrixWorld);
+    normal.set(0, 0, 1);
+    normal.applyMatrix4(rotationMatrix);
+    view.subVectors(reflectorWorldPosition, cameraWorldPosition); // Avoid rendering when reflector is facing away
+
+    if (view.dot(normal) > 0) return;
+    view.reflect(normal).negate();
+    view.add(reflectorWorldPosition);
+    rotationMatrix.extractRotation(camera.matrixWorld);
+    lookAtPosition.set(0, 0, -1);
+    lookAtPosition.applyMatrix4(rotationMatrix);
+    lookAtPosition.add(cameraWorldPosition);
+    target.subVectors(reflectorWorldPosition, lookAtPosition);
+    target.reflect(normal).negate();
+    target.add(reflectorWorldPosition);
+    virtualCamera.position.copy(view);
+    virtualCamera.up.set(0, 1, 0);
+    virtualCamera.up.applyMatrix4(rotationMatrix);
+    virtualCamera.up.reflect(normal);
+    virtualCamera.lookAt(target);
+    virtualCamera.far = camera.far; // Used in WebGLBackground
+
+    virtualCamera.updateMatrixWorld();
+    virtualCamera.projectionMatrix.copy(camera.projectionMatrix); // Update the texture matrix
+
+    textureMatrix.set(0.5, 0.0, 0.0, 0.5, 0.0, 0.5, 0.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0, 0.0, 1.0);
+    textureMatrix.multiply(virtualCamera.projectionMatrix);
+    textureMatrix.multiply(virtualCamera.matrixWorldInverse);
+    textureMatrix.multiply(scope.matrixWorld); // Now update projection matrix with new clip plane, implementing code from: http://www.terathon.com/code/oblique.html
+    // Paper explaining this technique: http://www.terathon.com/lengyel/Lengyel-Oblique.pdf
+
+    reflectorPlane.setFromNormalAndCoplanarPoint(normal, reflectorWorldPosition);
+    reflectorPlane.applyMatrix4(virtualCamera.matrixWorldInverse);
+    clipPlane.set(reflectorPlane.normal.x, reflectorPlane.normal.y, reflectorPlane.normal.z, reflectorPlane.constant);
+    var projectionMatrix = virtualCamera.projectionMatrix;
+    q.x = (Math.sign(clipPlane.x) + projectionMatrix.elements[8]) / projectionMatrix.elements[0];
+    q.y = (Math.sign(clipPlane.y) + projectionMatrix.elements[9]) / projectionMatrix.elements[5];
+    q.z = -1.0;
+    q.w = (1.0 + projectionMatrix.elements[10]) / projectionMatrix.elements[14]; // Calculate the scaled plane vector
+
+    clipPlane.multiplyScalar(2.0 / clipPlane.dot(q)); // Replacing the third row of the projection matrix
+
+    projectionMatrix.elements[2] = clipPlane.x;
+    projectionMatrix.elements[6] = clipPlane.y;
+    projectionMatrix.elements[10] = clipPlane.z + 1.0 - clipBias;
+    projectionMatrix.elements[14] = clipPlane.w; // Render
+
+    renderTarget.texture.encoding = renderer.outputEncoding;
+    this.material.uniforms.cameraNear.value = this.cameraNear || 0;
+    this.material.uniforms.cameraFar.value = this.cameraFar || 1000;
+    scope.visible = false;
+    var currentRenderTarget = renderer.getRenderTarget();
+    var currentXrEnabled = renderer.xr.enabled;
+    var currentShadowAutoUpdate = renderer.shadowMap.autoUpdate;
+    renderer.xr.enabled = false; // Avoid camera modification
+
+    renderer.shadowMap.autoUpdate = false; // Avoid re-computing shadows
+
+    renderer.setRenderTarget(renderTarget);
+    renderer.state.buffers.depth.setMask(true); // make sure the depth buffer is writable so it can be properly cleared, see #18897
+
+    if (renderer.autoClear === false) renderer.clear();
+    renderer.render(scene, virtualCamera);
+    renderer.xr.enabled = currentXrEnabled;
+    renderer.shadowMap.autoUpdate = currentShadowAutoUpdate;
+    renderer.setRenderTarget(currentRenderTarget); // Restore viewport
+
+    var viewport = camera.viewport;
+
+    if (viewport !== undefined) {
+      renderer.state.viewport(viewport);
+    }
+
+    scope.visible = true;
+  };
+
+  this.getRenderTarget = function () {
+    return renderTarget;
+  };
+};
+
+exports.Reflector = Reflector;
+Reflector.prototype = Object.create(_threeModule.Mesh.prototype);
+Reflector.prototype.constructor = Reflector;
+Reflector.ReflectorShader = {
+  uniforms: {
+    'color': {
+      value: null
+    },
+    'tDiffuse': {
+      value: null
+    },
+    'tDepth': {
+      value: null
+    },
+    'textureMatrix': {
+      value: null
+    },
+    'cameraNear': {
+      type: 'f',
+      value: 0
+    },
+    'cameraFar': {
+      type: 'f',
+      value: 0
+    }
+  },
+  vertexShader: ['uniform mat4 textureMatrix;', 'varying vec4 vUv;', 'void main() {', '	vUv = textureMatrix * vec4( position, 1.0 );', '	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );', '}'].join('\n'),
+  fragmentShader: ['#include <packing>', 'uniform vec3 color;', 'uniform sampler2D tDiffuse;', 'uniform sampler2D tDepth;', 'uniform float cameraNear;', 'uniform float cameraFar;', 'varying vec4 vUv;', 'float blendOverlay( float base, float blend ) {', '	return( base < 0.5 ? ( 2.0 * base * blend ) : ( 1.0 - 2.0 * ( 1.0 - base ) * ( 1.0 - blend ) ) );', '}', 'vec3 blendOverlay( vec3 base, vec3 blend ) {', '	return vec3( blendOverlay( base.r, blend.r ), blendOverlay( base.g, blend.g ), blendOverlay( base.b, blend.b ) );', '}', 'float readDepth( sampler2D depthSampler, vec4 coord ) {', '	float fragCoordZ = texture2DProj( depthSampler, coord ).x;', '	float viewZ = perspectiveDepthToViewZ( fragCoordZ, 0.001, 6.5);', '	return viewZToOrthographicDepth( viewZ, 0.001, 6.5);', '}', 'void main() {', '	vec4 base = texture2DProj( tDiffuse, vUv );', '   float depth = readDepth( tDepth, vUv ); //readDepth( tDepth, vUv );', '	gl_FragColor = vec4( blendOverlay( base.rgb, color ), pow(max(0.0, 1.0 - ( depth * 7000.0 )), 4.0) );', '}'].join('\n')
+};
+},{"three/build/three.module.js":"libao/node_modules/three/build/three.module.js","three":"libao/node_modules/three/build/three.module.js"}],"pa-visual.js":[function(require,module,exports) {
 "use strict";
 
 var ao = _interopRequireWildcard(require("./libao"));
 
 var _lite = require("./libao/buildr/lite");
+
+var _Water = require("./libao/node_modules/three/examples/jsm/objects/Water2");
+
+var _LightProbeGenerator = require("./libao/node_modules/three/examples/jsm/lights/LightProbeGenerator");
+
+var _ReflectorWithDepth = require("./libao/fx/patch/ReflectorWithDepth");
+
+var _buildr = require("./libao/buildr");
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
 
@@ -89419,38 +90395,425 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-var _ao$threeRenderer = ao.threeRenderer({
-  dpi: 2
-}),
+// ao.threePatchPCSS_Shadow({}); //全局高级阴影
+ao.buildr.lite.prep();
+
+var _ao$threeRenderer = ao.threeRenderer(_objectSpread({
+  dpi: 2,
+  antialias: true
+}, ao.threeRendererCfg_HighPerf_PostFX)),
     renderer = _ao$threeRenderer.renderer,
     canvas = _ao$threeRenderer.canvas;
 
-ao.threePerspectiveCamera();
-var scene = ao.threeScene();
-ao.threeOrbitControl({});
-scene.add(new ao.three.AmbientLight(0xffff33, 0.5));
-var mat = new ao.three.MeshStandardMaterial({
-  opacity: 0.5,
-  transparent: true,
-  color: 0xffffff
+var pmremGenerator = new ao.three.PMREMGenerator(renderer);
+var pngCubeRenderTarget, pngBackground;
+pmremGenerator.compileEquirectangularShader();
+ao.threeAutoColorMGMT(false);
+ao.threeFXSMAAEffect_GetImages().then(function () {
+  ao.threeFXComposer({}); // ao.threeFXNormalPass({ resolutionScale: 1 });
+
+  ao.threeFXEffectPass([ao.threeFXSMAAEffect({})]); // ao.threeFXFilmPass({}); //胶片后期
+
+  ao.threeFXUnrealPass({
+    //Unreal辉光渲染 (HDR)
+    threshold: 1,
+    strength: 0.5,
+    radius: 1,
+    unifiedFactor: .5
+  });
+  ao.threeFXEffectPass([// threeFXToneMappingEffect(),
+  new ao.postprocessing.GammaCorrectionEffect({
+    gamma: 2
+  })]); // ao.threeFXEffectPass([
+  //     ao.threeFXSSAOEffect(ao.threeFXSSAOEffect_PRESETS.Fast_SSAO_Detail)
+  //     // ao.threeFXSSAOEffect(ao.threeFXSSAOEffect_PRESETS.Fast_SSAO)
+  //     // ao.threeFXSSAOEffect({  //SSAO效果
+  //     //     ...ao.threeFXSSAOEffect_PRESETS.DustEverywhere, //预设
+  //     //     color: new three.Color(1, 1, 0),
+  //     //     blendFunction: ao.postprocessing.BlendFunction.SUBTRACT
+  //     // }),
+  // ]);
+});
+var floor_stage = ao.eased(0, 0, 0.05, 0.0001);
+var camera_2 = ao.threePerspectiveCamera(120);
+var camera_1 = ao.threePerspectiveCamera(50);
+var camera = ao.threePerspectiveCamera(90);
+console.log(camera);
+camera_2.updateProjectionMatrix();
+camera.updateProjectionMatrix();
+var mat2 = camera_2.projectionMatrix;
+var mat1 = camera.projectionMatrix;
+(0, ao.loop)(function () {
+  // camera.position.z = floor_stage.value * 10;
+  camera.rotation.z = 1 - floor_stage.value;
+  ao.threeEaseCameraProjection(camera, floor_stage.to == 1 ? camera_1 : camera_2, 0.05, 0.0001);
+});
+var scene = ao.threeScene(); // ao.threeOrbitControl({});
+
+scene.add(camera);
+camera.position.set(0, 0, 10); // scene.add(new three.AmbientLight(0xffffff, 1))
+
+var complex = new ao.three.Group();
+var testMat = new ao.three.MeshStandardMaterial({
+  color: 0xffffff,
+  roughness: 0,
+  metalness: 0.9,
+  wireframe: true,
+  emissive: 0x003356,
+  emissiveIntensity: 10
 });
 
-var _meta = _objectSpread(_objectSpread(_objectSpread(_objectSpread({}, (0, _lite.m_number)("opacity", {
-  min: 0,
-  max: 1,
-  step: 0.01
-})), (0, _lite.m_color)("baseColor", (0, _lite.proxy_three_color)("color"))), (0, _lite.m_color)("emissiveColor", (0, _lite.proxy_three_color)("emissive"))), (0, _lite.m_number)("emissiveIntensity", {
-  min: 0,
-  max: 1,
-  step: 0.01
-}));
+function init_spiral_rings() {
+  var control = _objectSpread(_objectSpread({
+    rotX: ao.eased(0, 0, 0.1, 0.0001),
+    rotZ: ao.eased(0, 0, 0.1, 0.0001)
+  }, (0, _lite.m_number)("rot_x", _objectSpread({
+    min: 0,
+    max: 3,
+    step: 0.01
+  }, (0, _lite.proxy_ao_eased)("rotX")))), (0, _lite.m_number)("rot_z", _objectSpread({
+    min: 0,
+    max: 3,
+    step: 0.01
+  }, (0, _lite.proxy_ao_eased)("rotZ"))));
 
-var box = new ao.three.Mesh(new ao.three.BoxGeometry(1, 1, 1), mat);
-scene.add(box);
+  var testGeo = new ao.three.BoxGeometry(0.4, 0.01, 0.4);
+
+  for (var deg = 0; deg < Math.PI * 2; deg += 0.05) {
+    (function (deg) {
+      var mesh = new ao.three.Mesh(testGeo, testMat);
+      var transformGrp = new ao.three.Group();
+      transformGrp.rotation.z = deg;
+      transformGrp.add(mesh);
+      (0, ao.loop)(function (t) {
+        mesh.rotation.x = deg * 2 + t / 2;
+        mesh.rotation.z = Math.PI / 2;
+      });
+      mesh.position.y = 1;
+      complex.add(transformGrp);
+    })(deg);
+  }
+
+  complex.rotation.x = Math.random();
+  complex.rotation.z = Math.random();
+  scene.add(complex);
+  ao.buildr.lite.inspect(control, 'control');
+}
+
+function stage_floor_test() {
+  var floor = new ao.three.PlaneBufferGeometry(50, 50);
+  var refl = new _ReflectorWithDepth.Reflector(floor, {
+    color: 0xffffff
+  });
+  refl.cameraFar = 3;
+  refl.position.y = -3;
+  refl.rotation.x = Math.PI * -0.5;
+  scene.add(refl);
+}
+
+function build_light_probe() {
+  var grp = new ao.three.Group();
+  var cubeTarget = new ao.three.WebGLCubeRenderTarget(32);
+  var cubeCam = new ao.three.CubeCamera(0.1, 300, cubeTarget);
+  var lp = new ao.three.LightProbe();
+  grp.add(lp);
+  (0, ao.loop)(function () {
+    cubeCam.update(renderer, scene);
+    lp.copy(_LightProbeGenerator.LightProbeGenerator.fromCubeRenderTarget(renderer, cubeTarget));
+    lp.intensity = 3;
+  });
+  return grp;
+} //idea:
+//stage ceiling - the link
+//[virtual stage] 
+
+
+function build_blinky_lights() {
+  var group = new ao.three.Group();
+  var tiny_plate = new ao.three.BoxGeometry(0.5, 0.05, 0.01);
+  var splits = 30;
+
+  for (var i = 0; i < splits; i++) {
+    (function () {
+      var plate_mat = new ao.three.MeshStandardMaterial({
+        emissive: 0xf3f2ff,
+        emissiveIntensity: Math.random() * 2,
+        side: ao.three.DoubleSide,
+        envMap: pngCubeRenderTarget.texture,
+        roughness: 0.6,
+        metalness: 0.6
+      });
+      var tiny_mesh = new ao.three.Mesh(tiny_plate, plate_mat);
+      var grp = new ao.three.Group();
+      grp.rotation.y = (Math.random() - 0.5) * Math.PI * 4;
+      grp.add(tiny_mesh);
+      tiny_mesh.position.z = ao.rrand(-0.1, -10);
+      tiny_mesh.position.y = ao.rrand(-1, 1);
+      group.add(grp);
+    })();
+  }
+
+  return group;
+}
+
+var scene_mode = _objectSpread({
+  show_floor: true
+}, (0, _lite.m_bool)("show_floor"));
+
+(0, ao.loop)(function () {
+  floor_stage.to = scene_mode.show_floor ? 1 : 0;
+});
+(0, _lite.inspect)(scene_mode, "scene");
+
+function build_display() {
+  var screens = new ao.three.Group();
+  var curved_stage = new ao.three.CylinderGeometry(10, 10, 5, 150, 1, true, Math.PI / 2, Math.PI);
+  var led = new ao.three.TextureLoader().load("particles.jpg");
+  led.wrapS = ao.three.RepeatWrapping;
+  led.repeat = new ao.three.Vector2(-1, 1);
+  var screenMat = new ao.three.MeshBasicMaterial({
+    color: 0xaaaaaa,
+    map: led,
+    side: ao.three.BackSide
+  });
+  var screen_large = new ao.three.Mesh(curved_stage, screenMat);
+  (0, ao.loop)(function () {
+    led.offset.x += 0.001;
+    screens.rotation.y = (1 - floor_stage.value) * -0.3;
+    var a = Math.random() < floor_stage.value ? 0.8 : 0.01;
+    screenMat.color.setRGB(a, a, a);
+    screen_large.visible = floor_stage.value > 0.3;
+  });
+  screens.add(screen_large);
+  return screens;
+}
+
+function build_floor() {
+  var waterGeometry = new ao.three.PlaneBufferGeometry(50, 50);
+  var water = new _Water.Water(waterGeometry, {
+    color: 0x070707,
+    scale: 1.2,
+    flowDirection: new ao.three.Vector2(0, 0),
+    textureWidth: 1024,
+    textureHeight: 1024,
+    reflectivity: 2
+  });
+  water.position.y = -3;
+  water.rotation.x = Math.PI * -0.5;
+  (0, ao.loop)(function () {
+    water.visible = Math.random() < floor_stage.value;
+  });
+  return water;
+}
+
+function build_ring() {
+  var group = new ao.three.Group();
+  var ringGeo = new ao.three.TorusGeometry(2, 0.01, 10, 100, Math.PI * 2);
+  var ringMat = new ao.three.MeshBasicMaterial({
+    color: 0xffffff
+  });
+  var mesh = new ao.three.Mesh(ringGeo, ringMat);
+  mesh.rotation.x = Math.PI / 2;
+  mesh.position.y = -2;
+  group.add(mesh);
+  (0, ao.loop)(function () {
+    group.visible = Math.random() < floor_stage.value;
+  });
+  return group;
+}
+
+function build_dome() {
+  var group = new ao.three.Group();
+  [[100, 65, 0.01]].forEach(function (v) {
+    var stage_sphere_geo = new ao.three.SphereGeometry(v[0], v[1], v[1]);
+    var mat_stage_sphere = new ao.three.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: v[2],
+      side: ao.three.BackSide,
+      wireframe: true
+    });
+    var ms = new ao.three.Mesh(stage_sphere_geo, mat_stage_sphere);
+    group.add(ms);
+  });
+  (0, ao.loop)(function () {
+    group.visible = Math.random() < floor_stage.value;
+  });
+  return group;
+} // stage.add(dome());
+
+
+function build_tiny_topography() {
+  var group = new ao.three.Group();
+  var step = 0.05;
+  var scaler = 2;
+  var points = new ao.three.Geometry();
+
+  for (var x = -1; x < 1; x += step) {
+    for (var y = -1; y < 1; y += step) {
+      if (Math.sqrt(x * x + y * y) > 1) continue;
+      var z = ao.map(ao.n3d(x * 2, y * 2, 0.6), -0.5, 0.5, 0, 1);
+      var r = 1;
+
+      if (z < 0.8) {
+        r = 0.2;
+      } else if (z < 0.4) {
+        r = 0.1;
+      }
+
+      points.vertices.push(new ao.three.Vector3(x * scaler, z * 0.8, y * scaler));
+      points.colors.push(new ao.three.Color(0.8, 0.4, 0.2));
+    }
+  }
+
+  var mat = new ao.three.PointsMaterial({
+    sizeAttenuation: true,
+    size: 0.02,
+    color: 0xffffff,
+    transparent: true,
+    blending: ao.three.AdditiveBlending,
+    vertexColors: ao.three.VertexColors
+  });
+  var mesh = new ao.three.Points(points, mat);
+  group.add(mesh);
+  (0, ao.loop)(function () {
+    var r = floor_stage.value * 0.5 + 0.5;
+    ;
+    group.scale.set(r, r, r);
+    group.rotation.y = -2 + 2 * floor_stage.value;
+    group.position.y = -2 + 0.5 * floor_stage.value;
+    group.visible = Math.random() < floor_stage.value;
+  });
+  return group;
+}
+
+function build_topography() {
+  var group = new ao.three.Group();
+  var step = 0.02;
+  var scaler = 50;
+  var points = new ao.three.Geometry();
+  var _max = 0.4;
+  var point_cache = [];
+
+  for (var x = -1; x < 1; x += step) {
+    for (var y = -1; y < 1; y += step) {
+      var r = Math.max(0, _max - Math.sqrt(x * x + y * y)) / _max * 0.3;
+      points.vertices.push(new ao.three.Vector3(x * scaler, 0, y * scaler));
+      points.colors.push(new ao.three.Color(r, r, r));
+      point_cache.push(r);
+    }
+  }
+
+  var mat = new ao.three.PointsMaterial({
+    sizeAttenuation: false,
+    size: 1,
+    color: 0xfeaa33,
+    opacity: 2,
+    transparent: true,
+    vertexColors: ao.three.VertexColors
+  });
+  var mesh = new ao.three.Points(points, mat);
+  group.add(mesh);
+  group.position.y = -2.5;
+  (0, ao.loop)(function () {
+    for (var i = 0; i < point_cache.length; i++) {
+      var s = floor_stage.value * (point_cache[i] + (1 - floor_stage.value) * 5 * Math.sin(point_cache[i] * 3 + 6 * floor_stage.value));
+      points.colors[i].setRGB(s, s, s);
+    }
+
+    points.colorsNeedUpdate = true;
+  });
+  return group;
+}
+
+function build_stars() {
+  var group = new ao.three.Group();
+  var r = 50;
+  var count = 1000;
+  var points = new ao.three.Geometry();
+
+  for (var i = 0; i < count; i++) {
+    var v = new ao.three.Vector3(ao.rrand(-10, 10), ao.rrand(-10, 10), ao.rrand(-10, 10));
+    v.normalize();
+    v.multiplyScalar(ao.rrand(r, r * 5));
+    points.vertices.push(v);
+    var c = Math.random();
+    points.colors.push(new ao.three.Color(c, c, c));
+  }
+
+  var mat = new ao.three.PointsMaterial({
+    sizeAttenuation: true,
+    size: 0.3,
+    color: 0xffffff,
+    vertexColors: ao.three.VertexColors,
+    opacity: 1.2,
+    transparent: true
+  });
+  var mesh = new ao.three.Points(points, mat);
+  group.add(mesh);
+  (0, ao.loop)(function () {
+    // mat.opacity = (1 -  floor_stage.value) * 1.2;
+    mesh.visible = Math.random() > floor_stage.value;
+  });
+  return group;
+}
+
+function build_stage() {
+  var stage = new ao.three.Group();
+
+  var params = _objectSpread(_objectSpread({
+    show: true
+  }, (0, _lite.m_bool)("show", {})), {}, {
+    contents: {}
+  });
+
+  var objs = {
+    dome: build_dome(),
+    display: build_display(),
+    ring: build_ring(),
+    floor: build_floor(),
+    tiny_topo: build_tiny_topography(),
+    topo: build_topography(),
+    stars: build_stars()
+  };
+
+  for (var i in objs) {
+    params.contents[i] = true;
+    params.contents = _objectSpread(_objectSpread({}, (0, _lite.m_bool)(i, {})), params.contents);
+    stage.add(objs[i]);
+  }
+
+  _buildr.lite.inspect(params, "stage");
+
+  (0, ao.loop)(function () {
+    stage.visible = params.show; // for (var i in objs) {
+    // objs[i].visible = params.contents[i];
+    // }
+  });
+  return stage;
+}
+
+function init() {
+  scene.add(build_stage()); // scene.fog = new three.FogExp2(0, 0.02);
+}
+
+new ao.three.TextureLoader().load("./textures/env.jpg", function (texture) {
+  pngCubeRenderTarget = pmremGenerator.fromEquirectangular(texture);
+  pngBackground = pngCubeRenderTarget.texture;
+  init();
+}); //info ocean
+//simulated ring (display) with (3d floating grids)
+//the hologram
+//sphere / the universe - VISUALIZER
+
 ao.threeLoop();
 ao.looperStart();
-document.body.appendChild(canvas);
-ao.buildr.lite.prep();
-ao.buildr.lite.inspect(mat, "basic_mat", _meta);
-},{"./libao":"libao/index.js","./libao/buildr/lite":"libao/buildr/lite.js"}]},{},["pa-visual.js"], null)
+document.body.appendChild(canvas); // window.mode = ao.eased(0, 0, 0.05, 0.00001);
+// ao.loop(() => {
+//     stage.visible = Math.random() < window.mode.value;
+//     stage.rotation.y = (1 - window.mode.value) * Math.PI;
+//     camera.position.y = (1 - window.mode.value) * 3 - 1;
+//     camera.position.z = (10 - window.mode.value * 5);
+// });
+},{"./libao":"libao/index.js","./libao/buildr/lite":"libao/buildr/lite.js","./libao/node_modules/three/examples/jsm/objects/Water2":"libao/node_modules/three/examples/jsm/objects/Water2.js","./libao/node_modules/three/examples/jsm/lights/LightProbeGenerator":"libao/node_modules/three/examples/jsm/lights/LightProbeGenerator.js","./libao/fx/patch/ReflectorWithDepth":"libao/fx/patch/ReflectorWithDepth.js","./libao/buildr":"libao/buildr/index.js"}]},{},["pa-visual.js"], null)
 //# sourceMappingURL=/pa-visual.419625a5.js.map
