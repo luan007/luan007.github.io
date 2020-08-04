@@ -33,7 +33,7 @@ ao.threeFXSMAAEffect_GetImages().then(() => {
     // ao.threeFXFilmPass({}); //胶片后期
     ao.threeFXUnrealPass({  //Unreal辉光渲染 (HDR)
         threshold: 1,
-        strength: 0.5,
+        strength: 0.4,
         radius: 1,
         unifiedFactor: .5
     });
@@ -195,6 +195,7 @@ function build_display() {
     led.wrapS = three.RepeatWrapping
     led.repeat = new three.Vector2(-1, 1);
 
+    var offset_y = ao.eased(0, 0, 0.1, 0.0001);
     var screenMat = new three.MeshBasicMaterial({
         color: 0xaaaaaa,
         map: led,
@@ -204,8 +205,10 @@ function build_display() {
 
     loop(() => {
         led.offset.x += 0.001;
+        offset_y.to = floor_stage.value;
 
         screens.rotation.y = (1 - floor_stage.value) * -0.3;
+        screens.position.y = -(1 - offset_y.value) * 4;
         var a = Math.random() < floor_stage.value ? 0.8 : 0.01;
         screenMat.color.setRGB(a, a, a);
         screen_large.visible = floor_stage.value > 0.3;
@@ -229,7 +232,7 @@ function build_floor() {
     water.position.y = -3;
     water.rotation.x = Math.PI * - 0.5;
     loop(() => {
-        water.visible = Math.random() < floor_stage.value;
+        water.visible = floor_stage.to == 1
     });
     return water;
 }
@@ -245,6 +248,8 @@ function build_ring() {
     mesh.position.y = -2;
     group.add(mesh);
     loop(() => {
+        var s = floor_stage.value;
+        mesh.scale.set(s,s,s);
         group.visible = Math.random() < floor_stage.value;
     })
     return group;
@@ -300,7 +305,7 @@ function build_tiny_topography() {
     }
     var mat = new three.PointsMaterial({
         sizeAttenuation: true,
-        size: 0.02,
+        size: 0.05,
         color: 0xffffff,
         transparent: true,
         blending: three.AdditiveBlending,
@@ -310,11 +315,12 @@ function build_tiny_topography() {
     group.add(mesh);
 
     loop(() => {
-        var r = floor_stage.value * 0.5 + 0.5;;
+        var r = floor_stage.value;;
         group.scale.set(r, r, r);
+        mat.opacity = r;
         group.rotation.y = -2 + 2 * floor_stage.value;
         group.position.y = -2 + 0.5 * floor_stage.value;
-        group.visible = Math.random() < floor_stage.value
+        // group.visible = Math.random() < floor_stage.value
     })
 
     return group;
@@ -323,7 +329,7 @@ function build_tiny_topography() {
 function build_topography() {
     var group = new three.Group();
     var step = 0.02;
-    var scaler = 50;
+    var scaler = 20;
     var points = new three.Geometry();
     var _max = 0.4;
     var point_cache = [];
@@ -351,9 +357,10 @@ function build_topography() {
     group.add(mesh);
     group.position.y = -2.5;
     loop(() => {
+        mat.opacity = floor_stage.value;
         for (var i = 0; i < point_cache.length; i++) {
-            var s = floor_stage.value * (point_cache[i] + (1 - floor_stage.value) * 5 * Math.sin(point_cache[i] * 3 + 6 * floor_stage.value));
-            points.colors[i].setRGB(s, s, s);
+            // var s = floor_stage.value * (point_cache[i] + (1 - floor_stage.value) * 5 * Math.sin(point_cache[i] * 3 + 6 * floor_stage.value));
+            // points.colors[i].setRGB(s, s, s);
         }
         points.colorsNeedUpdate = true;
     });
@@ -384,6 +391,8 @@ function build_stars() {
     var mesh = new three.Points(points, mat);
     group.add(mesh);
     loop(() => {
+        group.rotation.x += 0.00006;
+        group.rotation.y += 0.00003;
         // mat.opacity = (1 -  floor_stage.value) * 1.2;
         mesh.visible = Math.random() > floor_stage.value;
     })
