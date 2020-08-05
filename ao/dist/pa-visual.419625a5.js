@@ -40970,7 +40970,7 @@ function threePerspectiveCamera() {
   var fov = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 50;
   var ctx = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : threeDefaultCtx;
   var renderer = ctx.renderer;
-  var cam = new three.PerspectiveCamera(fov, renderer.width / renderer.height, 0.01, 2000);
+  var cam = new three.PerspectiveCamera(fov, renderer.width / renderer.height, 0.0001, 2000);
   renderer.onResize(function (width, height) {
     cam.aspect = width / height;
     cam.updateProjectionMatrix();
@@ -53284,7 +53284,7 @@ var threeFXComposer = function threeFXComposer(_ref) {
   });
 
   if (!skipRenderPass) {
-    threeFXRenderPass(ctx);
+    threeFXRenderPass({}, ctx);
   }
 
   return composer;
@@ -53305,11 +53305,15 @@ var threeFXAddPass = function threeFXAddPass(pass) {
 
 exports.threeFXAddPass = threeFXAddPass;
 
-var threeFXRenderPass = function threeFXRenderPass() {
-  var ctx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _threeUtil.threeDefaultCtx;
-  var pass = new postprocessing.RenderPass(ctx.scene, ctx.camera);
+var threeFXRenderPass = function threeFXRenderPass(_ref2) {
+  var _ref2$material = _ref2.material,
+      material = _ref2$material === void 0 ? null : _ref2$material;
+  var ctx = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _threeUtil.threeDefaultCtx;
+  var pass = new postprocessing.RenderPass(ctx.scene, ctx.camera, material);
   ctx.composer.addPass(pass);
-  var params = {};
+  var params = {
+    material: material
+  };
   return {
     pass: pass,
     params: params,
@@ -53319,17 +53323,17 @@ var threeFXRenderPass = function threeFXRenderPass() {
 
 exports.threeFXRenderPass = threeFXRenderPass;
 
-var threeFXUnrealPass = function threeFXUnrealPass(_ref2) {
-  var _ref2$resolution = _ref2.resolution,
-      resolution = _ref2$resolution === void 0 ? new three.Vector2(512, 512) : _ref2$resolution,
-      _ref2$threshold = _ref2.threshold,
-      threshold = _ref2$threshold === void 0 ? 0.8 : _ref2$threshold,
-      _ref2$strength = _ref2.strength,
-      strength = _ref2$strength === void 0 ? 0.4 : _ref2$strength,
-      _ref2$radius = _ref2.radius,
-      radius = _ref2$radius === void 0 ? 1 : _ref2$radius,
-      _ref2$unifiedFactor = _ref2.unifiedFactor,
-      unifiedFactor = _ref2$unifiedFactor === void 0 ? 0.5 : _ref2$unifiedFactor;
+var threeFXUnrealPass = function threeFXUnrealPass(_ref3) {
+  var _ref3$resolution = _ref3.resolution,
+      resolution = _ref3$resolution === void 0 ? new three.Vector2(512, 512) : _ref3$resolution,
+      _ref3$threshold = _ref3.threshold,
+      threshold = _ref3$threshold === void 0 ? 0.8 : _ref3$threshold,
+      _ref3$strength = _ref3.strength,
+      strength = _ref3$strength === void 0 ? 0.4 : _ref3$strength,
+      _ref3$radius = _ref3.radius,
+      radius = _ref3$radius === void 0 ? 1 : _ref3$radius,
+      _ref3$unifiedFactor = _ref3.unifiedFactor,
+      unifiedFactor = _ref3$unifiedFactor === void 0 ? 0.5 : _ref3$unifiedFactor;
   var ctx = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _threeUtil.threeDefaultCtx;
   threeFXPatchEffect(_UnreallBloomPassPatched.PatchedUnrealBloomPass);
   var pass = new _UnreallBloomPassPatched.PatchedUnrealBloomPass(resolution, strength, radius, threshold, unifiedFactor);
@@ -53350,15 +53354,15 @@ var threeFXUnrealPass = function threeFXUnrealPass(_ref2) {
 
 exports.threeFXUnrealPass = threeFXUnrealPass;
 
-var threeFXFilmPass = function threeFXFilmPass(_ref3) {
-  var _ref3$noiseIntensity = _ref3.noiseIntensity,
-      noiseIntensity = _ref3$noiseIntensity === void 0 ? 0.2 : _ref3$noiseIntensity,
-      _ref3$scanlineIntensi = _ref3.scanlineIntensity,
-      scanlineIntensity = _ref3$scanlineIntensi === void 0 ? 0 : _ref3$scanlineIntensi,
-      _ref3$scanlineCount = _ref3.scanlineCount,
-      scanlineCount = _ref3$scanlineCount === void 0 ? 0 : _ref3$scanlineCount,
-      _ref3$grayscale = _ref3.grayscale,
-      grayscale = _ref3$grayscale === void 0 ? false : _ref3$grayscale;
+var threeFXFilmPass = function threeFXFilmPass(_ref4) {
+  var _ref4$noiseIntensity = _ref4.noiseIntensity,
+      noiseIntensity = _ref4$noiseIntensity === void 0 ? 0.2 : _ref4$noiseIntensity,
+      _ref4$scanlineIntensi = _ref4.scanlineIntensity,
+      scanlineIntensity = _ref4$scanlineIntensi === void 0 ? 0 : _ref4$scanlineIntensi,
+      _ref4$scanlineCount = _ref4.scanlineCount,
+      scanlineCount = _ref4$scanlineCount === void 0 ? 0 : _ref4$scanlineCount,
+      _ref4$grayscale = _ref4.grayscale,
+      grayscale = _ref4$grayscale === void 0 ? false : _ref4$grayscale;
   var ctx = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _threeUtil.threeDefaultCtx;
   threeFXPatchEffect(_FilmPass.FilmPass);
   var pass = new _FilmPass.FilmPass(noiseIntensity, scanlineIntensity, scanlineCount, grayscale);
@@ -53404,11 +53408,11 @@ var threeFXToneMappingEffect = function threeFXToneMappingEffect() {
 
 exports.threeFXToneMappingEffect = threeFXToneMappingEffect;
 
-var threeFXSMAAEffect = function threeFXSMAAEffect(_ref4) {
-  var _ref4$edgeDetection = _ref4.edgeDetection,
-      edgeDetection = _ref4$edgeDetection === void 0 ? 0.1 : _ref4$edgeDetection,
-      searchImage = _ref4.searchImage,
-      areaImage = _ref4.areaImage;
+var threeFXSMAAEffect = function threeFXSMAAEffect(_ref5) {
+  var _ref5$edgeDetection = _ref5.edgeDetection,
+      edgeDetection = _ref5$edgeDetection === void 0 ? 0.1 : _ref5$edgeDetection,
+      searchImage = _ref5.searchImage,
+      areaImage = _ref5.areaImage;
   var ctx = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _threeUtil.threeDefaultCtx;
 
   if (!searchImage && !ctx.fx_smaa_textures) {
@@ -53456,9 +53460,9 @@ var threeFXEffectPass = function threeFXEffectPass() {
 
 exports.threeFXEffectPass = threeFXEffectPass;
 
-var threeFXNormalPass = function threeFXNormalPass(_ref5) {
-  var _ref5$resolutionScale = _ref5.resolutionScale,
-      resolutionScale = _ref5$resolutionScale === void 0 ? 0.5 : _ref5$resolutionScale;
+var threeFXNormalPass = function threeFXNormalPass(_ref6) {
+  var _ref6$resolutionScale = _ref6.resolutionScale,
+      resolutionScale = _ref6$resolutionScale === void 0 ? 0.5 : _ref6$resolutionScale;
   var ctx = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _threeUtil.threeDefaultCtx;
   var params = {
     resolutionScale: resolutionScale
@@ -53631,35 +53635,35 @@ var threeFXSSAOEffect_PRESETS = {
 };
 exports.threeFXSSAOEffect_PRESETS = threeFXSSAOEffect_PRESETS;
 
-var threeFXSSAOEffect = function threeFXSSAOEffect(_ref6) {
-  var _ref6$blendFunction = _ref6.blendFunction,
-      blendFunction = _ref6$blendFunction === void 0 ? postprocessing.BlendFunction.MULTIPLY : _ref6$blendFunction,
-      _ref6$samples = _ref6.samples,
-      samples = _ref6$samples === void 0 ? 21 : _ref6$samples,
-      _ref6$rings = _ref6.rings,
-      rings = _ref6$rings === void 0 ? 4 : _ref6$rings,
-      _ref6$distanceThresho = _ref6.distanceThreshold,
-      distanceThreshold = _ref6$distanceThresho === void 0 ? 1.0 : _ref6$distanceThresho,
-      _ref6$distanceFalloff = _ref6.distanceFalloff,
-      distanceFalloff = _ref6$distanceFalloff === void 0 ? 0.0 : _ref6$distanceFalloff,
-      _ref6$rangeThreshold = _ref6.rangeThreshold,
-      rangeThreshold = _ref6$rangeThreshold === void 0 ? 0.015 : _ref6$rangeThreshold,
-      _ref6$rangeFalloff = _ref6.rangeFalloff,
-      rangeFalloff = _ref6$rangeFalloff === void 0 ? 0.002 : _ref6$rangeFalloff,
-      _ref6$luminanceInflue = _ref6.luminanceInfluence,
-      luminanceInfluence = _ref6$luminanceInflue === void 0 ? 0.1 : _ref6$luminanceInflue,
-      _ref6$radius = _ref6.radius,
-      radius = _ref6$radius === void 0 ? 20 : _ref6$radius,
-      _ref6$scale = _ref6.scale,
-      scale = _ref6$scale === void 0 ? 1.0 : _ref6$scale,
-      _ref6$bias = _ref6.bias,
-      bias = _ref6$bias === void 0 ? 0.05 : _ref6$bias,
-      _ref6$intensity = _ref6.intensity,
-      intensity = _ref6$intensity === void 0 ? 10 : _ref6$intensity,
-      _ref6$fade = _ref6.fade,
-      fade = _ref6$fade === void 0 ? 0.001 : _ref6$fade,
-      _ref6$color = _ref6.color,
-      color = _ref6$color === void 0 ? new three.Color(1, 0, 0) : _ref6$color;
+var threeFXSSAOEffect = function threeFXSSAOEffect(_ref7) {
+  var _ref7$blendFunction = _ref7.blendFunction,
+      blendFunction = _ref7$blendFunction === void 0 ? postprocessing.BlendFunction.MULTIPLY : _ref7$blendFunction,
+      _ref7$samples = _ref7.samples,
+      samples = _ref7$samples === void 0 ? 21 : _ref7$samples,
+      _ref7$rings = _ref7.rings,
+      rings = _ref7$rings === void 0 ? 4 : _ref7$rings,
+      _ref7$distanceThresho = _ref7.distanceThreshold,
+      distanceThreshold = _ref7$distanceThresho === void 0 ? 1.0 : _ref7$distanceThresho,
+      _ref7$distanceFalloff = _ref7.distanceFalloff,
+      distanceFalloff = _ref7$distanceFalloff === void 0 ? 0.0 : _ref7$distanceFalloff,
+      _ref7$rangeThreshold = _ref7.rangeThreshold,
+      rangeThreshold = _ref7$rangeThreshold === void 0 ? 0.015 : _ref7$rangeThreshold,
+      _ref7$rangeFalloff = _ref7.rangeFalloff,
+      rangeFalloff = _ref7$rangeFalloff === void 0 ? 0.002 : _ref7$rangeFalloff,
+      _ref7$luminanceInflue = _ref7.luminanceInfluence,
+      luminanceInfluence = _ref7$luminanceInflue === void 0 ? 0.1 : _ref7$luminanceInflue,
+      _ref7$radius = _ref7.radius,
+      radius = _ref7$radius === void 0 ? 20 : _ref7$radius,
+      _ref7$scale = _ref7.scale,
+      scale = _ref7$scale === void 0 ? 1.0 : _ref7$scale,
+      _ref7$bias = _ref7.bias,
+      bias = _ref7$bias === void 0 ? 0.05 : _ref7$bias,
+      _ref7$intensity = _ref7.intensity,
+      intensity = _ref7$intensity === void 0 ? 10 : _ref7$intensity,
+      _ref7$fade = _ref7.fade,
+      fade = _ref7$fade === void 0 ? 0.001 : _ref7$fade,
+      _ref7$color = _ref7.color,
+      color = _ref7$color === void 0 ? new three.Color(1, 0, 0) : _ref7$color;
   var ctx = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _threeUtil.threeDefaultCtx;
 
   if (!ctx.composer_normal_pass) {
@@ -53693,19 +53697,19 @@ var threeFXSSAOEffect = function threeFXSSAOEffect(_ref6) {
 
 exports.threeFXSSAOEffect = threeFXSSAOEffect;
 
-var threeFXBloomEffect = function threeFXBloomEffect(_ref7) {
-  var _ref7$opacity = _ref7.opacity,
-      opacity = _ref7$opacity === void 0 ? 1 : _ref7$opacity,
-      _ref7$blendFunction = _ref7.blendFunction,
-      blendFunction = _ref7$blendFunction === void 0 ? postprocessing.BlendFunction.SCREEN : _ref7$blendFunction,
-      _ref7$kernelSize = _ref7.kernelSize,
-      kernelSize = _ref7$kernelSize === void 0 ? postprocessing.KernelSize.VERY_LARGE : _ref7$kernelSize,
-      _ref7$luminanceThresh = _ref7.luminanceThreshold,
-      luminanceThreshold = _ref7$luminanceThresh === void 0 ? 0.9 : _ref7$luminanceThresh,
-      _ref7$luminanceSmooth = _ref7.luminanceSmoothing,
-      luminanceSmoothing = _ref7$luminanceSmooth === void 0 ? 0.07 : _ref7$luminanceSmooth,
-      _ref7$height = _ref7.height,
-      height = _ref7$height === void 0 ? 600 : _ref7$height;
+var threeFXBloomEffect = function threeFXBloomEffect(_ref8) {
+  var _ref8$opacity = _ref8.opacity,
+      opacity = _ref8$opacity === void 0 ? 1 : _ref8$opacity,
+      _ref8$blendFunction = _ref8.blendFunction,
+      blendFunction = _ref8$blendFunction === void 0 ? postprocessing.BlendFunction.SCREEN : _ref8$blendFunction,
+      _ref8$kernelSize = _ref8.kernelSize,
+      kernelSize = _ref8$kernelSize === void 0 ? postprocessing.KernelSize.VERY_LARGE : _ref8$kernelSize,
+      _ref8$luminanceThresh = _ref8.luminanceThreshold,
+      luminanceThreshold = _ref8$luminanceThresh === void 0 ? 0.9 : _ref8$luminanceThresh,
+      _ref8$luminanceSmooth = _ref8.luminanceSmoothing,
+      luminanceSmoothing = _ref8$luminanceSmooth === void 0 ? 0.07 : _ref8$luminanceSmooth,
+      _ref8$height = _ref8.height,
+      height = _ref8$height === void 0 ? 600 : _ref8$height;
   var ctx = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _threeUtil.threeDefaultCtx;
   var params = {
     opacity: opacity,
@@ -90385,6 +90389,8 @@ var _ReflectorWithDepth = require("./libao/fx/patch/ReflectorWithDepth");
 
 var _buildr = require("./libao/buildr");
 
+var _three = require("three/build/three.module");
+
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -90410,15 +90416,21 @@ var pngCubeRenderTarget, pngBackground;
 pmremGenerator.compileEquirectangularShader();
 ao.threeAutoColorMGMT(false);
 ao.threeFXSMAAEffect_GetImages().then(function () {
-  ao.threeFXComposer({}); // ao.threeFXNormalPass({ resolutionScale: 1 });
+  ao.threeFXComposer({
+    skipRenderPass: true
+  }); // ao.threeFXNormalPass({ resolutionScale: 1 });
 
+  ao.threeFXRenderPass({// material: new three.MeshNormalMaterial({
+    //     side: three.DoubleSide
+    // })
+  });
   ao.threeFXEffectPass([ao.threeFXSMAAEffect({})]); // ao.threeFXFilmPass({}); //胶片后期
 
   ao.threeFXUnrealPass({
     //Unreal辉光渲染 (HDR)
     threshold: 1,
-    strength: 0.4,
-    radius: 1,
+    strength: 0.2,
+    radius: 0.3,
     unifiedFactor: .5
   });
   ao.threeFXEffectPass([// threeFXToneMappingEffect(),
@@ -90436,7 +90448,7 @@ ao.threeFXSMAAEffect_GetImages().then(function () {
 });
 var floor_stage = ao.eased(0, 0, 0.05, 0.0001);
 var camera_2 = ao.threePerspectiveCamera(120);
-var camera_1 = ao.threePerspectiveCamera(50);
+var camera_1 = ao.threePerspectiveCamera(70);
 var camera = ao.threePerspectiveCamera(90);
 console.log(camera);
 camera_2.updateProjectionMatrix();
@@ -90444,12 +90456,12 @@ camera.updateProjectionMatrix();
 var mat2 = camera_2.projectionMatrix;
 var mat1 = camera.projectionMatrix;
 (0, ao.loop)(function () {
-  // camera.position.z = floor_stage.value * 10;
+  camera.position.z = 10 + -1 * floor_stage.value;
   camera.rotation.z = 1 - floor_stage.value;
   ao.threeEaseCameraProjection(camera, floor_stage.to == 1 ? camera_1 : camera_2, 0.05, 0.0001);
 });
-var scene = ao.threeScene(); // ao.threeOrbitControl({});
-
+var scene = ao.threeScene();
+ao.threeOrbitControl({});
 scene.add(camera);
 camera.position.set(0, 0, 10); // scene.add(new three.AmbientLight(0xffffff, 1))
 
@@ -90609,9 +90621,57 @@ function build_floor() {
   return water;
 }
 
+function build_split_screens() {
+  var group = new ao.three.Group();
+  var mat = new ao.three.MeshStandardMaterial({
+    emissiveIntensity: 1,
+    emissive: 0xffffff,
+    transparent: true,
+    blending: ao.three.AdditiveBlending,
+    // wireframe: true,
+    side: _three.DoubleSide
+  });
+  var w = 1;
+  var pad = 0.02;
+  var h = 0.5;
+  var geo = new ao.three.PlaneGeometry(w, h);
+
+  function createCurvedDisp(r, count, q) {
+    var rot = 0;
+    var dw = w + pad;
+    var grp = new ao.three.Group();
+    var deg = Math.atan2(dw / 2, r) * 2;
+    var final = new ao.three.Group();
+
+    for (var i = 0; i < count; i++) {
+      var anchor = new ao.three.Group();
+      var mesh = new ao.three.Mesh(geo, mat);
+      mesh.position.z = r;
+      anchor.rotation.y = rot;
+      rot += deg;
+      anchor.add(mesh);
+      grp.add(anchor);
+    }
+
+    grp.rotation.y = -rot / 2 + deg / 2 + Math.PI;
+    final.add(grp);
+    final.position.y = q;
+    final.rotation.y = ao.rrand(-Math.PI * 2, Math.PI * 2);
+    return final;
+  }
+
+  for (var i = 0; i < 5; i++) {
+    group.add(createCurvedDisp(10, 3, 1.2));
+    group.add(createCurvedDisp(8, 2, 2));
+    group.add(createCurvedDisp(10, 5, 3.2));
+  }
+
+  return group;
+}
+
 function build_ring() {
   var group = new ao.three.Group();
-  var ringGeo = new ao.three.TorusGeometry(2, 0.01, 10, 100, Math.PI * 2);
+  var ringGeo = new ao.three.TorusGeometry(4, 0.01, 10, 100, Math.PI * 2);
   var ringMat = new ao.three.MeshBasicMaterial({
     color: 0xffffff
   });
@@ -90776,13 +90836,14 @@ function build_stage() {
   });
 
   var objs = {
-    dome: build_dome(),
-    display: build_display(),
+    // dome: build_dome(),
+    // display: build_display(),
     ring: build_ring(),
     floor: build_floor(),
-    tiny_topo: build_tiny_topography(),
+    // tiny_topo: build_tiny_topography(),
     topo: build_topography(),
-    stars: build_stars()
+    stars: build_stars(),
+    split_screens: build_split_screens()
   };
 
   for (var i in objs) {
@@ -90823,5 +90884,5 @@ document.body.appendChild(canvas); // window.mode = ao.eased(0, 0, 0.05, 0.00001
 //     camera.position.y = (1 - window.mode.value) * 3 - 1;
 //     camera.position.z = (10 - window.mode.value * 5);
 // });
-},{"./libao":"libao/index.js","./libao/buildr/lite":"libao/buildr/lite.js","./libao/node_modules/three/examples/jsm/objects/Water2":"libao/node_modules/three/examples/jsm/objects/Water2.js","./libao/node_modules/three/examples/jsm/lights/LightProbeGenerator":"libao/node_modules/three/examples/jsm/lights/LightProbeGenerator.js","./libao/fx/patch/ReflectorWithDepth":"libao/fx/patch/ReflectorWithDepth.js","./libao/buildr":"libao/buildr/index.js"}]},{},["pa-visual.js"], null)
+},{"./libao":"libao/index.js","./libao/buildr/lite":"libao/buildr/lite.js","./libao/node_modules/three/examples/jsm/objects/Water2":"libao/node_modules/three/examples/jsm/objects/Water2.js","./libao/node_modules/three/examples/jsm/lights/LightProbeGenerator":"libao/node_modules/three/examples/jsm/lights/LightProbeGenerator.js","./libao/fx/patch/ReflectorWithDepth":"libao/fx/patch/ReflectorWithDepth.js","./libao/buildr":"libao/buildr/index.js","three/build/three.module":"libao/node_modules/three/build/three.module.js"}]},{},["pa-visual.js"], null)
 //# sourceMappingURL=/pa-visual.419625a5.js.map

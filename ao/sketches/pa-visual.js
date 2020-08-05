@@ -6,6 +6,7 @@ import { LightProbeGenerator } from './libao/node_modules/three/examples/jsm/lig
 // import { h_onchange, meta, m_color, m_number, proxy_three_color, m_bool } from "./libao/buildr/lite";
 import { Reflector } from "./libao/fx/patch/ReflectorWithDepth";
 import { lite } from "./libao/buildr";
+import { DoubleSide } from "three/build/three.module";
 
 
 
@@ -25,16 +26,21 @@ pmremGenerator.compileEquirectangularShader();
 ao.threeAutoColorMGMT(false)
 
 ao.threeFXSMAAEffect_GetImages().then(() => {
-    ao.threeFXComposer({});
+    ao.threeFXComposer({ skipRenderPass: true });
     // ao.threeFXNormalPass({ resolutionScale: 1 });
+    ao.threeFXRenderPass({
+        // material: new three.MeshNormalMaterial({
+        //     side: three.DoubleSide
+        // })
+    });
     ao.threeFXEffectPass([
         ao.threeFXSMAAEffect({})
     ]);
     // ao.threeFXFilmPass({}); //胶片后期
     ao.threeFXUnrealPass({  //Unreal辉光渲染 (HDR)
         threshold: 1,
-        strength: 0.4,
-        radius: 1,
+        strength: 0.2,
+        radius: 0.3,
         unifiedFactor: .5
     });
     ao.threeFXEffectPass([
@@ -55,7 +61,7 @@ ao.threeFXSMAAEffect_GetImages().then(() => {
 var floor_stage = ao.eased(0, 0, 0.05, 0.0001);
 
 var camera_2 = ao.threePerspectiveCamera(120);
-var camera_1 = ao.threePerspectiveCamera(50);
+var camera_1 = ao.threePerspectiveCamera(70);
 var camera = ao.threePerspectiveCamera(90);
 console.log(camera);
 
@@ -65,14 +71,14 @@ var mat2 = camera_2.projectionMatrix;
 var mat1 = camera.projectionMatrix;
 
 loop(() => {
-    // camera.position.z = floor_stage.value * 10;
+    camera.position.z = 10 + (-1 * floor_stage.value);
     camera.rotation.z = 1 - floor_stage.value;
     ao.threeEaseCameraProjection(camera,
         floor_stage.to == 1 ? camera_1 : camera_2
         , 0.05, 0.0001);
 })
 var scene = ao.threeScene();
-// ao.threeOrbitControl({});
+ao.threeOrbitControl({});
 
 scene.add(camera);
 camera.position.set(0, 0, 10);
@@ -237,9 +243,53 @@ function build_floor() {
     return water;
 }
 
+function build_split_screens() {
+    var group = new three.Group();
+    var mat = new three.MeshStandardMaterial({
+        emissiveIntensity: 1,
+        emissive: 0xffffff,
+        transparent: true,
+        blending: three.AdditiveBlending,
+        // wireframe: true,
+        side: DoubleSide,
+    });
+    var w = 1;
+    var pad = 0.02;
+    var h = 0.5;
+    var geo = new three.PlaneGeometry(w, h);
+    function createCurvedDisp(r, count, q) {
+        var rot = 0;
+        var dw = w + pad;
+        var grp = new three.Group();
+        var deg = Math.atan2((dw / 2), r) * 2;
+        var final = new three.Group();
+        for (var i = 0; i < count; i++) {
+            var anchor = new three.Group();
+            var mesh = new three.Mesh(geo, mat);
+            mesh.position.z = r;
+            anchor.rotation.y = rot;
+            rot += deg;
+            anchor.add(mesh);
+            grp.add(anchor);
+        }
+        grp.rotation.y = -rot / 2 + deg / 2 + Math.PI;
+        final.add(grp);
+        final.position.y = q;
+        final.rotation.y = ao.rrand(-Math.PI * 2, Math.PI * 2);
+        return final;
+    }
+
+    for (var i = 0; i < 5; i++) {
+        group.add(createCurvedDisp(10, 3, 1.2))
+        group.add(createCurvedDisp(8, 2, 2))
+        group.add(createCurvedDisp(10, 5, 3.2))
+    }
+    return group;
+}
+
 function build_ring() {
     var group = new three.Group();
-    var ringGeo = new three.TorusGeometry(2, 0.01, 10, 100, Math.PI * 2)
+    var ringGeo = new three.TorusGeometry(4, 0.01, 10, 100, Math.PI * 2)
     var ringMat = new three.MeshBasicMaterial({
         color: 0xffffff
     });
@@ -249,7 +299,7 @@ function build_ring() {
     group.add(mesh);
     loop(() => {
         var s = floor_stage.value;
-        mesh.scale.set(s,s,s);
+        mesh.scale.set(s, s, s);
         group.visible = Math.random() < floor_stage.value;
     })
     return group;
@@ -410,13 +460,14 @@ function build_stage() {
         }
     };
     var objs = {
-        dome: build_dome(),
-        display: build_display(),
+        // dome: build_dome(),
+        // display: build_display(),
         ring: build_ring(),
         floor: build_floor(),
-        tiny_topo: build_tiny_topography(),
+        // tiny_topo: build_tiny_topography(),
         topo: build_topography(),
         stars: build_stars(),
+        split_screens: build_split_screens()
     };
     for (var i in objs) {
         params.contents[i] = true;
